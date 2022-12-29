@@ -2,16 +2,14 @@ package dev.lumix.astatine.screens
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import dev.lumix.astatine.Astatine
-import dev.lumix.astatine.Static
-import dev.lumix.astatine.assets.SoundAssets
-import dev.lumix.astatine.assets.TextureAtlasAssets
-import dev.lumix.astatine.assets.load
+import dev.lumix.astatine.engine.Static
+import dev.lumix.astatine.engine.SoundAssets
+import dev.lumix.astatine.engine.TextureAtlasAssets
+import dev.lumix.astatine.engine.load
 import ktx.app.KtxScreen
 import ktx.freetype.loadFreeTypeFont
 import ktx.freetype.registerFreeTypeFontLoaders
-import ktx.graphics.use
 
 class LoadingScreen(private val game: Astatine) : KtxScreen {
     override fun render(delta: Float) {

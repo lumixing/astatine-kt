@@ -3,16 +3,17 @@ package dev.lumix.astatine.screens
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.profiling.GLProfiler
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.Array
-import dev.lumix.astatine.Static
+import dev.lumix.astatine.ecs.systems.PhysicsSystem
+import dev.lumix.astatine.ecs.systems.RenderSystem
+import dev.lumix.astatine.engine.Static
 import dev.lumix.astatine.world.World
 import ktx.app.KtxScreen
 import ktx.app.clearScreen
 import ktx.graphics.use
+import ktx.log.info
 
 class MainScreen() : KtxScreen {
     private val world = World()
@@ -25,7 +26,13 @@ class MainScreen() : KtxScreen {
     override fun show() {
         super.show()
         Static.camera.zoom = .5f
-        Static.camera.position.set(0f, 0f, 0f)
+        Static.camera.position.set(0f, 3800f, 0f)
+        Static.engine.apply {
+            addSystem(RenderSystem())
+            addSystem(PhysicsSystem(world.world))
+        }
+        info { "systems: ${Static.engine.systems.size()}" }
+        world.show()
     }
 
     override fun render(delta: Float) {
@@ -35,6 +42,7 @@ class MainScreen() : KtxScreen {
         if (Gdx.input.isKeyPressed(Input.Keys.A)) Static.camera.translate(-10f, 0f)
         if (Gdx.input.isKeyPressed(Input.Keys.S)) Static.camera.translate(0f, -10f)
         if (Gdx.input.isKeyPressed(Input.Keys.D)) Static.camera.translate(10f, 0f)
+        if (Gdx.input.isTouched) world.breakBlock(Static.camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f)))
 
         // update
         Static.camera.update()
@@ -58,6 +66,9 @@ class MainScreen() : KtxScreen {
                 Static.font.draw(batch, layout, 1280f - layout.width - 4f, 720f - layout.height + 4 - (i * 18))
             }
         }
+
+        world.debug.render(world.world, Static.camera.combined)
+        Static.engine.update(delta)
     }
 
     private fun updateDebug(delta: Float) {
@@ -72,6 +83,10 @@ class MainScreen() : KtxScreen {
         debugLeft.add("block mouse: (${blockMousePos.x.toInt()}, ${blockMousePos.y.toInt()})")
         debugLeft.add("chunk mouse: (${chunkMousePos.x.toInt()}, ${chunkMousePos.y.toInt()})")
         debugLeft.add("chunk center: (${chunkCenterPos.x.toInt()}, ${chunkCenterPos.y.toInt()})")
+        debugLeft.add("seed: ${world.chunkManager.seed}")
+        debugLeft.add("engine entities pool: ${Static.engine.entities.size()}")
+        debugLeft.add("world bodies: ${world.world.bodyCount}")
+        debugLeft.add("block entities array: ${world.chunkManager.activeBlockEntities.size}")
 
         debugRight.clear()
         debugRight.add("fps: ${Gdx.graphics.framesPerSecond} (${MathUtils.floor(delta * 1000)}ms)")

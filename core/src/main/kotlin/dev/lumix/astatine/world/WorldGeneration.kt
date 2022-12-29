@@ -7,10 +7,10 @@ import dev.lumix.astatine.world.chunk.Chunk
 import dev.lumix.astatine.world.chunk.ChunkManager
 
 
-class WorldGeneration(private val chunkManager: ChunkManager) {
-    private val surfaceNoise = SimplexNoise()
-    private val caveNoise = SimplexNoise()
-    private val oresNoise = SimplexNoise()
+class WorldGeneration(private val chunkManager: ChunkManager, private val seed: Long = 0) {
+    private val surfaceNoise = SimplexNoise().apply { genGrad(seed) }
+    private val caveNoise = SimplexNoise().apply { genGrad(seed) }
+    private val oresNoise = SimplexNoise().apply { genGrad(seed) }
     private val maxX = ChunkManager.chunksX * Chunk.chunkSize
     private val maxY = ChunkManager.chunksY * Chunk.chunkSize
 

@@ -1,8 +1,6 @@
 package dev.lumix.astatine.world.chunk
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.math.MathUtils
-import dev.lumix.astatine.Static
+import com.badlogic.ashley.core.Entity
 import dev.lumix.astatine.world.block.BlockManager
 import dev.lumix.astatine.world.block.BlockType
 

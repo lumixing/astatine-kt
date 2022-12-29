@@ -1,4 +1,4 @@
-package dev.lumix.astatine.assets
+package dev.lumix.astatine.engine
 
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.audio.Sound

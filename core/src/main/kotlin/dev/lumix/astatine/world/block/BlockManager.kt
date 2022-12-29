@@ -1,8 +1,8 @@
 package dev.lumix.astatine.world.block
 
-import dev.lumix.astatine.Static
-import dev.lumix.astatine.assets.TextureAtlasAssets
-import dev.lumix.astatine.assets.get
+import dev.lumix.astatine.engine.Static
+import dev.lumix.astatine.engine.TextureAtlasAssets
+import dev.lumix.astatine.engine.get
 
 class BlockManager {
     companion object {

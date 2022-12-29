@@ -1,5 +1,6 @@
-package dev.lumix.astatine
+package dev.lumix.astatine.engine
 
+import com.badlogic.ashley.core.PooledEngine
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
@@ -12,8 +13,8 @@ class Static {
             enableBlending()
         }
         val debugBatch = SpriteBatch()
-//        val font = BitmapFont()
         val camera = OrthographicCamera().apply { setToOrtho(false, 1280f, 720f) }
+        val engine = PooledEngine()
         lateinit var font: BitmapFont
     }
 }
