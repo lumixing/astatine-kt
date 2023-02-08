@@ -4,79 +4,90 @@ import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.systems.IteratingSystem
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
-import com.dongbat.jbump.Item
+import com.dongbat.jbump.Collisions
+import com.dongbat.jbump.World
+import dev.lumix.astatine.ecs.components.ItemComponent
 import dev.lumix.astatine.ecs.components.PhysicsComponent
 import dev.lumix.astatine.ecs.components.PlayerComponent
 import dev.lumix.astatine.ecs.components.TransformComponent
+import dev.lumix.astatine.engine.PlayerCollisionFilter
 import ktx.ashley.allOf
 import ktx.ashley.get
+import ktx.log.info
 import kotlin.math.abs
 
-class PlayerSystem : IteratingSystem(
+class PlayerSystem(val world: World<Entity>) : IteratingSystem(
     allOf(PlayerComponent::class).get()
 ) {
-    companion object {
-        const val FRICTION = 250f
-        const val RUN_ACCELERATION = 1800f
-        const val RUN_SPEED = 800f
-        const val JUMP_SPEED = 1200f
-        const val BOUNCE_SPEED = 800f
-        const val GRAVITY = 3000f
-        const val JUMP_MAX_TIME = .25f
-//        const val PLAYER_COLLISION_FILTER = PlayerCollision
-    }
-
-    var jumping = false
+    private val WALK_SPEED = 80f
+    private val JUMP_FORCE = 100f
+    private val WALK_ACCELERATION = 200f
+    private val FALL_ACCELERATION = 150f
+    private val FRICTION = 50f
+    private val MAX_VERTICAL_SPEED = 250f
+    private val MAX_JUMP_TIME = 0.25f
+    private var isJumping = false
+    private var jumpTime = 0f
 
     override fun processEntity(entity: Entity, delta: Float) {
-//        entity[TransformComponent.mapper]?.let { transform ->
-//            entity[PhysicsComponent.mapper]?.let { physics ->
-////                if (physics.item == null) {
-////                    physics.item = Item(entity)
-////                }
-//
-//                physics.delta.x = approach(physics.delta.x, 0f, FRICTION * delta)
-//
-//                val isLeftPressed = Gdx.input.isKeyPressed(Input.Keys.LEFT)
-//                val isRightPressed = Gdx.input.isKeyPressed(Input.Keys.RIGHT)
-//                val isUpPressed = Gdx.input.isKeyPressed(Input.Keys.UP)
-//                val isUpJustPressed = Gdx.input.isKeyJustPressed(Input.Keys.UP)
-//
-//                if (isRightPressed) {
-//                    physics.delta.x = approach(physics.delta.x, RUN_SPEED, RUN_ACCELERATION * delta)
-//                } else if (isLeftPressed) {
-//                    physics.delta.x = approach(physics.delta.x, -RUN_SPEED, RUN_ACCELERATION * delta)
-//                } else {
-//                    physics.delta.x = approach(physics.delta.x, 0f, RUN_ACCELERATION * delta)
-//                }
-//
-//                if (!isUpPressed) jumping = false
-//                if (isUpJustPressed) {
-////                    physics.world.project(physics.item,
-////                        transform.position.x + physics.boxPosition.x,
-////                        transform.position.y + physics.boxPosition.y,
-////                        physics.boxScale.x,
-////                        physics.boxScale.y,
-////                        transform.position.x + physics.boxPosition.x,
-////                        transform.position.y + physics.boxPosition.y - .1f,
-////                    )
-//                }
-//            }
-//        }
+        info { "processing player start" }
+        val transform = entity[TransformComponent.mapper]
+        val physics = entity[PhysicsComponent.mapper]
+        val item = entity[ItemComponent.mapper]
+
+        val playerCollisionFilter = PlayerCollisionFilter()
+        val collisions = Collisions()
+
+        // update y vel
+        val isJumpPressed = Gdx.input.isKeyPressed(Input.Keys.W)
+        if (isJumpPressed) {
+            isJumping = false
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+            world.project(item!!.item, transform!!.position.x, transform.position.y, physics!!.bounds.x, physics.bounds.y, transform.position.x, transform.position.y - 0.1f,
+                playerCollisionFilter, collisions);
+
+            val isGrounded = collisions.size() > 0
+            if (isGrounded) {
+                isJumping = true
+            }
+        }
+
+        if (isJumpPressed && isJumping && jumpTime < MAX_JUMP_TIME) {
+            physics!!.velocity.y = JUMP_FORCE
+            jumpTime += delta
+        }
+
+        // update x vel
+        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+            physics!!.velocity.x = approach(physics.velocity.x, -WALK_SPEED, WALK_ACCELERATION * delta)
+        } else if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+            physics!!.velocity.x = approach(physics.velocity.x, WALK_SPEED, WALK_ACCELERATION * delta)
+        } else {
+            physics!!.velocity.x = approach(physics.velocity.x, 0f, WALK_ACCELERATION * delta)
+        }
+
+        // update pos based on velocities
+//        transform!!.position.add(physics.velocity.x * delta, physics.velocity.y * delta)
+        info { "processing player end" }
     }
 
     private fun approach(start: Float, target: Float, increment: Float): Float {
-        var _increment = increment
-        var _start = start
+        var start = start
+        var increment = increment
+        increment = abs(increment)
 
-        _increment = abs(increment)
-        if (_start < target) {
-            _start += _increment
-            if (_start > target) _start = target
+        if (start < target) {
+            start += increment
+            if (start > target) {
+                start = target
+            }
         } else {
-            _start -= _increment
-            if (_start < target) _start = target
+            start -= increment
+            if (start < target) {
+                start = target
+            }
         }
-        return _start
+        return start
     }
 }

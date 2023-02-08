@@ -5,12 +5,8 @@ import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
-import com.badlogic.gdx.graphics.profiling.GLProfiler
 import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import com.badlogic.gdx.scenes.scene2d.ui.TextField
 import com.badlogic.gdx.utils.Array
-import com.dongbat.jbump.CollisionFilter
 import dev.lumix.astatine.ecs.components.PhysicsComponent
 import dev.lumix.astatine.ecs.components.TransformComponent
 import dev.lumix.astatine.ecs.systems.PhysicsSystem
@@ -40,7 +36,7 @@ class MainScreen : KtxScreen {
         Static.engine.apply {
             addSystem(RenderSystem())
             addSystem(PhysicsSystem(world.physicsWorld))
-//            addSystem(PlayerSystem())
+            addSystem(PlayerSystem(world.physicsWorld))
         }
     }
 

@@ -14,31 +14,32 @@ import ktx.log.info
 class World {
     val physicsWorld = World<Entity>()
     private val chunkManager = ChunkManager(physicsWorld)
+
     val playerEntity = Static.engine.entity {
         with<TransformComponent> {
-            position.set(200f, 4000f)
+            position.set(200f, 4070f)
         }
         with<SpriteComponent>()
         with<PhysicsComponent>()
         with<PlayerComponent>()
     }
-    val playerItem: Item<Entity> = physicsWorld.add(Item(playerEntity), 200f, 4000f, 8f, 8f)
-    private val itemComponent = ItemComponent(playerItem)
+    val playerItem: Item<Entity> = physicsWorld.add(Item(playerEntity), 200f, 4070f, 8f, 8f)
+    private val playerItemComponent = ItemComponent(playerItem)
 
-    private val floorEntity = Static.engine.entity {
+    private val boxEntity = Static.engine.entity {
         with<TransformComponent> {
-            position.set(0f, 3800f)
+            position.set(210f, 4070f)
         }
         with<SpriteComponent>()
-        with<BlockComponent>()
+        with<PhysicsComponent>()
     }
-    val floorItem: Item<Entity> = physicsWorld.add(Item(floorEntity), 0f, 3800f, 1000f, 8f)
+    private val boxItem: Item<Entity> = physicsWorld.add(Item(boxEntity), 210f, 4070f, 8f, 8f)
+    private val boxItemComponent = ItemComponent(boxItem)
 
     init {
         info { "adding item component" }
-        playerEntity.add(itemComponent)
-
-        chunkManager.updateBlockEntitiesNear(24, 478)
+        playerEntity.add(playerItemComponent)
+        boxEntity.add(boxItemComponent)
     }
 
     fun update() {
