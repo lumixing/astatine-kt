@@ -7,4 +7,7 @@ class PlayerComponent : Component {
     companion object {
         val mapper = mapperFor<PlayerComponent>()
     }
+
+    var isJumping = false
+    var jumpTime = 0f
 }

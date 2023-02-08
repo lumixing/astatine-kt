@@ -8,6 +8,7 @@ import com.dongbat.jbump.Collisions
 import com.dongbat.jbump.World
 import dev.lumix.astatine.ecs.components.ItemComponent
 import dev.lumix.astatine.ecs.components.PhysicsComponent
+import dev.lumix.astatine.ecs.components.PlayerComponent
 import dev.lumix.astatine.ecs.components.TransformComponent
 import dev.lumix.astatine.engine.PlayerCollisionFilter
 import ktx.ashley.allOf
@@ -26,17 +27,15 @@ class PhysicsSystem(val world: World<Entity>) : IteratingSystem(
     private val FRICTION = 50f
     private val MAX_VERTICAL_SPEED = 250f
     private val MAX_JUMP_TIME = 0.25f
-    private var isJumping = false
-    private var jumpTime = 0f
 
     override fun processEntity(entity: Entity, delta: Float) {
         info { "processing entity start" }
         val transform = entity[TransformComponent.mapper]
         val physics = entity[PhysicsComponent.mapper]
         val item = entity[ItemComponent.mapper]
+        val player = entity[PlayerComponent.mapper]
 
         val playerCollisionFilter = PlayerCollisionFilter()
-        val collisions = Collisions()
 
         // update y vel
         physics!!.velocity.y = approach(physics.velocity.y, -MAX_VERTICAL_SPEED, FALL_ACCELERATION * delta)
@@ -60,12 +59,16 @@ class PhysicsSystem(val world: World<Entity>) : IteratingSystem(
             val hitFloorOrCeiling = collision.normal.y != 0
             if (hitFloorOrCeiling) {
                 physics.velocity.y = 0f
-                jumpTime = MAX_JUMP_TIME
 
-                val hitFloor = collision.normal.y == 1
-                if (hitFloor) {
-                    jumpTime = 0f
-                    isJumping = false
+                // todo: ultra scuffed (pls fix)
+                player?.let {
+                    it.jumpTime = MAX_JUMP_TIME
+
+                    val hitFloor = collision.normal.y == 1
+                    if (hitFloor) {
+                        it.jumpTime = 0f
+                        it.isJumping = false
+                    }
                 }
             }
         }

@@ -22,40 +22,35 @@ class PlayerSystem(val world: World<Entity>) : IteratingSystem(
     private val WALK_SPEED = 80f
     private val JUMP_FORCE = 100f
     private val WALK_ACCELERATION = 200f
-    private val FALL_ACCELERATION = 150f
-    private val FRICTION = 50f
-    private val MAX_VERTICAL_SPEED = 250f
     private val MAX_JUMP_TIME = 0.25f
-    private var isJumping = false
-    private var jumpTime = 0f
 
     override fun processEntity(entity: Entity, delta: Float) {
-        info { "processing player start" }
         val transform = entity[TransformComponent.mapper]
         val physics = entity[PhysicsComponent.mapper]
         val item = entity[ItemComponent.mapper]
+        val player = entity[PlayerComponent.mapper]
 
         val playerCollisionFilter = PlayerCollisionFilter()
         val collisions = Collisions()
 
         // update y vel
         val isJumpPressed = Gdx.input.isKeyPressed(Input.Keys.W)
-        if (isJumpPressed) {
-            isJumping = false
+        if (!isJumpPressed) {
+            player!!.isJumping = false
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-            world.project(item!!.item, transform!!.position.x, transform.position.y, physics!!.bounds.x, physics.bounds.y, transform.position.x, transform.position.y - 0.1f,
+            world.project(item!!.item, transform!!.position.x, transform.position.y, physics!!.bounds.x, physics.bounds.y, transform.position.x, transform.position.y - 1f,
                 playerCollisionFilter, collisions);
 
             val isGrounded = collisions.size() > 0
             if (isGrounded) {
-                isJumping = true
+                player!!.isJumping = true
             }
         }
 
-        if (isJumpPressed && isJumping && jumpTime < MAX_JUMP_TIME) {
+        if (isJumpPressed && player!!.isJumping && player.jumpTime < MAX_JUMP_TIME) {
             physics!!.velocity.y = JUMP_FORCE
-            jumpTime += delta
+            player.jumpTime += delta
         }
 
         // update x vel
@@ -66,10 +61,6 @@ class PlayerSystem(val world: World<Entity>) : IteratingSystem(
         } else {
             physics!!.velocity.x = approach(physics.velocity.x, 0f, WALK_ACCELERATION * delta)
         }
-
-        // update pos based on velocities
-//        transform!!.position.add(physics.velocity.x * delta, physics.velocity.y * delta)
-        info { "processing player end" }
     }
 
     private fun approach(start: Float, target: Float, increment: Float): Float {

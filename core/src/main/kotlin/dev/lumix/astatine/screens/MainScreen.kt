@@ -83,6 +83,10 @@ class MainScreen : KtxScreen {
             for (item in world.physicsWorld.rects.iterator()) {
                 shapeDrawer.rect(item.x, item.y, item.w, item.h)
             }
+
+            shapeDrawer.color = Color.BLUE
+            val pos = world.playerEntity[TransformComponent.mapper]!!.position
+            shapeDrawer.line(pos.x, pos.y-1f, pos.x+8f, pos.y-1f)
         }
 
         if (showChunkOutline) {
