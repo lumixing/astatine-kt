@@ -21,6 +21,7 @@ class ChunkManager(private val physicsWorld: World<Entity>) {
     }
 
     private val chunks: Array<Array<Chunk?>> = Array(CHUNKS_X) { Array(CHUNKS_Y) { null } }
+    private val loadedChunks: Array<Chunk?> = Array(36) { null }
     private val blockEntities: com.badlogic.gdx.utils.Array<Entity> = com.badlogic.gdx.utils.Array()
     private val blockEntityPool = pool { Entity() }
 
@@ -35,9 +36,19 @@ class ChunkManager(private val physicsWorld: World<Entity>) {
     }
 
     fun render() {
-        for (y in 0 until CHUNKS_Y) {
-            for (x in 0 until CHUNKS_X) {
-                chunks[x][y]?.render()
+        for (chunk in loadedChunks) {
+            chunk?.render()
+        }
+    }
+
+    // using chunk position
+    fun loadChunks(cx: Int, cy: Int) {
+        if (loadedChunks[21] != null && loadedChunks[21]?.x == cx && loadedChunks[21]?.y == cy)
+            return;
+        var i = 0
+        for (y in cy-3 until cy+3) {
+            for (x in cx-3 until cx+3) {
+                loadedChunks[i++] = getChunk(x, y)
             }
         }
     }

@@ -1,6 +1,7 @@
 package dev.lumix.astatine.world
 
 import com.badlogic.ashley.core.Entity
+import com.badlogic.gdx.math.Vector3
 import com.dongbat.jbump.Item
 import com.dongbat.jbump.World
 import dev.lumix.astatine.ecs.components.*
@@ -47,6 +48,10 @@ class World {
 
         Static.camera.position.x = transform!!.position.x
         Static.camera.position.y = transform.position.y
+
+        val centerUnprojPos = Static.camera.unproject(Vector3(1280f / 2f, 720f / 2f, 0f))
+        val centerChunkPos = centerUnprojPos.cpy().scl(1/256f)
+        chunkManager.loadChunks(centerChunkPos.x.toInt(), centerChunkPos.y.toInt())
 
         chunkManager.clearBlockEntities()
         chunkManager.updateBlockEntitiesNear((transform.position.x / 8).toInt(), (transform.position.y / 8).toInt())
