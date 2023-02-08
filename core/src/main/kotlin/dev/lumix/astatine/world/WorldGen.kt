@@ -25,7 +25,7 @@ class WorldGen(private val chunkManager: ChunkManager, private val seed: Long = 
     private fun generateDirt() {
         for (y in 0 until maxY) {
             for (x in 0 until maxX) {
-                chunkManager.setBlock(x, y, BlockType.DIRT)
+                chunkManager.setBlockType(x, y, BlockType.DIRT)
             }
         }
     }
@@ -36,9 +36,9 @@ class WorldGen(private val chunkManager: ChunkManager, private val seed: Long = 
         val offset: Int = maxY - 30
         for (x in 0 until maxX) {
             val `val` = (surfaceNoise.generate(x / length, 0f) * height).toInt() + offset
-            chunkManager.setBlock(x, `val`, BlockType.GRASS)
+            chunkManager.setBlockType(x, `val`, BlockType.GRASS)
             for (y in `val` + 1 until maxY) {
-                chunkManager.setBlock(x, y, BlockType.AIR)
+                chunkManager.setBlockType(x, y, BlockType.AIR)
             }
         }
     }
@@ -50,7 +50,7 @@ class WorldGen(private val chunkManager: ChunkManager, private val seed: Long = 
         for (x in 0 until maxX) {
             val `val` = (MathUtils.sin(x * length) * height + offset).toInt()
             for (y in `val` downTo 0) {
-                if (y < `val` - 5) chunkManager.setBlock(x, y, BlockType.STONE) else chunkManager.setBlock(
+                if (y < `val` - 5) chunkManager.setBlockType(x, y, BlockType.STONE) else chunkManager.setBlockType(
                     x,
                     y,
                     if (MathUtils.randomBoolean()) BlockType.STONE else BlockType.DIRT
@@ -64,9 +64,9 @@ class WorldGen(private val chunkManager: ChunkManager, private val seed: Long = 
         val threshold = -0.2f // smaller number smaller caves
         for (y in 0 until maxY) {
             for (x in 0 until maxX) {
-                if (chunkManager.getBlock(x, y) != BlockType.STONE) continue
+                if (chunkManager.getBlockType(x, y) != BlockType.STONE) continue
                 val `val` = caveNoise.generate(x / zoom, y / zoom)
-                if (`val` < threshold) chunkManager.setBlock(x, y, BlockType.AIR)
+                if (`val` < threshold) chunkManager.setBlockType(x, y, BlockType.AIR)
             }
         }
     }
@@ -76,9 +76,9 @@ class WorldGen(private val chunkManager: ChunkManager, private val seed: Long = 
         val threshold = -0.7f // smaller number smaller ores
         for (x in 0 until maxX) {
             for (y in 0 until maxY) {
-                if (chunkManager.getBlock(x, y) != BlockType.STONE) continue
+                if (chunkManager.getBlockType(x, y) != BlockType.STONE) continue
                 val `val` = oresNoise.generate(x / zoom, y / zoom)
-                if (`val` < threshold) chunkManager.setBlock(x, y, BlockType.ORE)
+                if (`val` < threshold) chunkManager.setBlockType(x, y, BlockType.ORE)
             }
         }
     }
