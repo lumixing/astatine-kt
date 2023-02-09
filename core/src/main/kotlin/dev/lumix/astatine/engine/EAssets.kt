@@ -7,7 +7,7 @@ import ktx.assets.getAsset
 import ktx.assets.load
 
 enum class SoundAssets(val path: String) {
-    Yippee("yippee.mp3")
+    Break("break.wav")
 }
 
 inline fun AssetManager.load(asset: SoundAssets) = load<Sound>(asset.path)

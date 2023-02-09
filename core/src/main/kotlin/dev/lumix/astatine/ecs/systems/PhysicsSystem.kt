@@ -2,9 +2,6 @@ package dev.lumix.astatine.ecs.systems
 
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.systems.IteratingSystem
-import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.Input
-import com.dongbat.jbump.Collisions
 import com.dongbat.jbump.World
 import dev.lumix.astatine.ecs.components.ItemComponent
 import dev.lumix.astatine.ecs.components.PhysicsComponent
@@ -13,23 +10,17 @@ import dev.lumix.astatine.ecs.components.TransformComponent
 import dev.lumix.astatine.engine.PlayerCollisionFilter
 import ktx.ashley.allOf
 import ktx.ashley.get
-import ktx.log.info
 import kotlin.math.abs
 
 class PhysicsSystem(val world: World<Entity>) : IteratingSystem(
     allOf(TransformComponent::class, PhysicsComponent::class, ItemComponent::class).get()
 ) {
-    private val GRAVITY = -100f
-    private val WALK_SPEED = 80f
-    private val JUMP_FORCE = 100f
-    private val WALK_ACCELERATION = 200f
-    private val FALL_ACCELERATION = 150f
+    private val GRAVITY = 300f
     private val FRICTION = 50f
     private val MAX_VERTICAL_SPEED = 250f
     private val MAX_JUMP_TIME = 0.25f
 
     override fun processEntity(entity: Entity, delta: Float) {
-        info { "processing entity start" }
         val transform = entity[TransformComponent.mapper]
         val physics = entity[PhysicsComponent.mapper]
         val item = entity[ItemComponent.mapper]
@@ -38,7 +29,7 @@ class PhysicsSystem(val world: World<Entity>) : IteratingSystem(
         val playerCollisionFilter = PlayerCollisionFilter()
 
         // update y vel
-        physics!!.velocity.y = approach(physics.velocity.y, -MAX_VERTICAL_SPEED, FALL_ACCELERATION * delta)
+        physics!!.velocity.y = approach(physics.velocity.y, -MAX_VERTICAL_SPEED, GRAVITY * delta)
 
         // update x vel
         physics.velocity.x = approach(physics.velocity.x, 0f, FRICTION * delta)
@@ -78,7 +69,6 @@ class PhysicsSystem(val world: World<Entity>) : IteratingSystem(
         rect?.let {
             transform.position.set(rect.x, rect.y)
         }
-        info { "processing entity end" }
     }
 
     private fun approach(start: Float, target: Float, increment: Float): Float {

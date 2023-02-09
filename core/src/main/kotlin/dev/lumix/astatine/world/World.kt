@@ -14,7 +14,7 @@ import ktx.log.info
 
 class World {
     val physicsWorld = World<Entity>()
-    private val chunkManager = ChunkManager(physicsWorld)
+    val chunkManager = ChunkManager(physicsWorld)
 
     val playerEntity = Static.engine.entity {
         with<TransformComponent> {
@@ -23,6 +23,7 @@ class World {
         with<SpriteComponent>()
         with<PhysicsComponent>()
         with<PlayerComponent>()
+        with<InventoryComponent>()
     }
     val playerItem: Item<Entity> = physicsWorld.add(Item(playerEntity), 200f, 4070f, 8f, 8f)
     private val playerItemComponent = ItemComponent(playerItem)

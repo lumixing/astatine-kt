@@ -13,14 +13,13 @@ import dev.lumix.astatine.ecs.components.TransformComponent
 import dev.lumix.astatine.engine.PlayerCollisionFilter
 import ktx.ashley.allOf
 import ktx.ashley.get
-import ktx.log.info
 import kotlin.math.abs
 
 class PlayerSystem(val world: World<Entity>) : IteratingSystem(
     allOf(PlayerComponent::class).get()
 ) {
     private val WALK_SPEED = 80f
-    private val JUMP_FORCE = 100f
+    private val JUMP_FORCE = 80f
     private val WALK_ACCELERATION = 200f
     private val MAX_JUMP_TIME = 0.25f
 
@@ -39,7 +38,7 @@ class PlayerSystem(val world: World<Entity>) : IteratingSystem(
             player!!.isJumping = false
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-            world.project(item!!.item, transform!!.position.x, transform.position.y, physics!!.bounds.x, physics.bounds.y, transform.position.x, transform.position.y - 1f,
+            world.project(item!!.item, transform!!.position.x, transform.position.y, physics!!.bounds.x, physics.bounds.y, transform.position.x, transform.position.y - .1f,
                 playerCollisionFilter, collisions);
 
             val isGrounded = collisions.size() > 0

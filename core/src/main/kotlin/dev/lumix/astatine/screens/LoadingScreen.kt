@@ -1,7 +1,6 @@
 package dev.lumix.astatine.screens
 
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.g2d.BitmapFont
 import dev.lumix.astatine.Astatine
 import dev.lumix.astatine.engine.SoundAssets
 import dev.lumix.astatine.engine.Static
@@ -17,7 +16,7 @@ class LoadingScreen(private val game: Astatine) : KtxScreen {
         Static.camera.update()
 
         if (Static.assets.isFinished) {
-            Static.font = Static.assets.get<BitmapFont>("hack.ttf")
+            Static.font = Static.assets.get("hack.ttf")
             game.addScreen(MainScreen())
             game.setScreen<MainScreen>()
             game.removeScreen<LoadingScreen>()
