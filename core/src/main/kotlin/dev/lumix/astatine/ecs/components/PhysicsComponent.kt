@@ -11,5 +11,4 @@ class PhysicsComponent : Component {
 
     val velocity = Vector2()
     val bounds = Vector2()
-    var isGrounded = false
 }

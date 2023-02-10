@@ -6,13 +6,30 @@ import dev.lumix.astatine.world.block.BlockType
 import dev.lumix.astatine.world.chunk.Chunk
 import dev.lumix.astatine.world.chunk.ChunkManager
 
-
 class WorldGen(private val chunkManager: ChunkManager, private val seed: Long = 0) {
+    companion object {
+        const val MAX_BLOCK_X = ChunkManager.CHUNKS_X * Chunk.CHUNK_SIZE
+        const val MAX_BLOCK_Y = ChunkManager.CHUNKS_Y * Chunk.CHUNK_SIZE
+
+        const val SURFACE_LENGTH = 24F
+        const val SURFACE_HEIGHT = 8F
+        const val SURFACE_OFFSET = MAX_BLOCK_Y - 30
+
+        const val STONE_LENGTH = 0.4f
+        const val STONE_HEIGHT = 1.6f
+        const val STONE_OFFSET = MAX_BLOCK_Y - 50
+        const val STONE_THRESHOLD = 5
+
+        const val CAVES_SCALE = 10f
+        const val CAVES_TRESHOLD = -0.2f
+
+        const val ORES_SCALE = 8f
+        const val ORES_TRESHOLD = -0.7f
+    }
+
     private val surfaceNoise = SimplexNoise().apply { genGrad(seed) }
     private val caveNoise = SimplexNoise().apply { genGrad(seed) }
     private val oresNoise = SimplexNoise().apply { genGrad(seed) }
-    private val maxX = ChunkManager.CHUNKS_X * Chunk.CHUNK_SIZE
-    private val maxY = ChunkManager.CHUNKS_Y * Chunk.CHUNK_SIZE
 
     fun generate() {
         generateDirt();
@@ -23,62 +40,62 @@ class WorldGen(private val chunkManager: ChunkManager, private val seed: Long = 
     }
 
     private fun generateDirt() {
-        for (y in 0 until maxY) {
-            for (x in 0 until maxX) {
-                chunkManager.setBlockType(x, y, BlockType.DIRT)
+        for (blockY in 0 until MAX_BLOCK_Y) {
+            for (blockX in 0 until MAX_BLOCK_X) {
+                chunkManager.setBlockType(blockX, blockY, BlockType.DIRT)
             }
         }
     }
 
     private fun generateSurface() {
-        val length = 24f
-        val height = 8f
-        val offset: Int = maxY - 30
-        for (x in 0 until maxX) {
-            val `val` = (surfaceNoise.generate(x / length, 0f) * height).toInt() + offset
-            chunkManager.setBlockType(x, `val`, BlockType.GRASS)
-            for (y in `val` + 1 until maxY) {
-                chunkManager.setBlockType(x, y, BlockType.AIR)
+        for (blockX in 0 until MAX_BLOCK_X) {
+            val value = (surfaceNoise.generate(blockX / SURFACE_LENGTH, 0f) * SURFACE_HEIGHT).toInt() + SURFACE_OFFSET
+
+            chunkManager.setBlockType(blockX, value, BlockType.GRASS)
+            for (blockY in value + 1 until MAX_BLOCK_Y) {
+                chunkManager.setBlockType(blockX, blockY, BlockType.AIR)
             }
         }
     }
 
     private fun generateStone() {
-        val length = 0.4f
-        val height = 1.6f
-        val offset: Int = maxY - 50
-        for (x in 0 until maxX) {
-            val `val` = (MathUtils.sin(x * length) * height + offset).toInt()
-            for (y in `val` downTo 0) {
-                if (y < `val` - 5) chunkManager.setBlockType(x, y, BlockType.STONE) else chunkManager.setBlockType(
-                    x,
-                    y,
-                    if (MathUtils.randomBoolean()) BlockType.STONE else BlockType.DIRT
-                )
+        for (blockX in 0 until MAX_BLOCK_X) {
+            val value = (MathUtils.sin(blockX * STONE_LENGTH) * STONE_HEIGHT + STONE_OFFSET).toInt()
+
+            for (blockY in value downTo 0) {
+                if (blockY < value - STONE_THRESHOLD) {
+                    chunkManager.setBlockType(blockX, blockY, BlockType.STONE)
+                    continue
+                }
+
+                val blockType = if (MathUtils.randomBoolean()) BlockType.STONE else BlockType.DIRT
+                chunkManager.setBlockType(blockX, blockY, blockType)
             }
         }
     }
 
     private fun generateCaves() {
-        val zoom = 10f
-        val threshold = -0.2f // smaller number smaller caves
-        for (y in 0 until maxY) {
-            for (x in 0 until maxX) {
-                if (chunkManager.getBlockType(x, y) != BlockType.STONE) continue
-                val `val` = caveNoise.generate(x / zoom, y / zoom)
-                if (`val` < threshold) chunkManager.setBlockType(x, y, BlockType.AIR)
+        for (blockY in 0 until MAX_BLOCK_Y) {
+            for (blockX in 0 until MAX_BLOCK_X) {
+                if (chunkManager.getBlockType(blockX, blockY) != BlockType.STONE) continue
+
+                val value = caveNoise.generate(blockX / CAVES_SCALE, blockY / CAVES_SCALE)
+                if (value < CAVES_TRESHOLD) {
+                    chunkManager.setBlockType(blockX, blockY, BlockType.AIR)
+                }
             }
         }
     }
 
     private fun generateOres() {
-        val zoom = 8f
-        val threshold = -0.7f // smaller number smaller ores
-        for (x in 0 until maxX) {
-            for (y in 0 until maxY) {
-                if (chunkManager.getBlockType(x, y) != BlockType.STONE) continue
-                val `val` = oresNoise.generate(x / zoom, y / zoom)
-                if (`val` < threshold) chunkManager.setBlockType(x, y, BlockType.ORE)
+        for (blockY in 0 until MAX_BLOCK_Y) {
+            for (blockX in 0 until MAX_BLOCK_X) {
+                if (chunkManager.getBlockType(blockX, blockY) != BlockType.STONE) continue
+
+                val value = oresNoise.generate(blockX / ORES_SCALE, blockY / ORES_SCALE)
+                if (value < ORES_TRESHOLD) {
+                    chunkManager.setBlockType(blockX, blockY, BlockType.ORE)
+                }
             }
         }
     }

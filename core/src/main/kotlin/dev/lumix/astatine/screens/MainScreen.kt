@@ -17,6 +17,7 @@ import dev.lumix.astatine.ecs.systems.PlayerSystem
 import dev.lumix.astatine.ecs.systems.RenderSystem
 import dev.lumix.astatine.engine.SoundAssets
 import dev.lumix.astatine.engine.Static
+import dev.lumix.astatine.engine.Utils
 import dev.lumix.astatine.engine.get
 import dev.lumix.astatine.world.World
 import dev.lumix.astatine.world.block.BlockType
@@ -27,19 +28,22 @@ import ktx.ashley.get
 import ktx.graphics.use
 
 class MainScreen : KtxScreen {
-//    val profiler = GLProfiler(Gdx.graphics).apply {
-//        enable()
-//    }
     private val world = World()
+
+    private var breakSound = Static.assets[SoundAssets.Break]
+
     private val debugLeft = Array<String>()
     private val debugRight = Array<String>()
-//    private val cameraSpeed = 500f
     private val shapeDrawer = ShapeRenderer()
     private var showEntityOutline = true
     private var showChunkOutline = false
-    private var breakSound = Static.assets[SoundAssets.Break]
 
     override fun show() {
+        Static.camera.apply {
+            zoom = 0.5f
+            position.set(200f, 3800f, 0f)
+        }
+
         Static.engine.apply {
             addSystem(RenderSystem())
             addSystem(PhysicsSystem(world.physicsWorld))
@@ -48,43 +52,95 @@ class MainScreen : KtxScreen {
     }
 
     override fun render(delta: Float) {
-        if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) Gdx.app.exit()
-
-        if (Gdx.input.isKeyPressed(Input.Keys.EQUALS)) Static.camera.zoom -= 0.4f * delta
-        if (Gdx.input.isKeyPressed(Input.Keys.MINUS)) Static.camera.zoom += 0.4f * delta
-        if (Gdx.input.isKeyPressed(Input.Keys.NUM_0)) Static.camera.zoom = 0.5f
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) showEntityOutline = !showEntityOutline
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F2)) showChunkOutline = !showChunkOutline
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
-            world.playerEntity[InventoryComponent.mapper]!!.inventory.clearInventory()
-        }
-
-        if (Gdx.input.isTouched) {
-            val unprojMousePos = Static.camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f))
-            val blockMousePos = unprojMousePos.cpy().scl(1/8f)
-            val blockType = world.chunkManager.getBlockType(blockMousePos.x.toInt(), blockMousePos.y.toInt())
-
-            // todo: fix this
-            if (blockType != BlockType.AIR || blockType == null) {
-                world.playerEntity[InventoryComponent.mapper]!!.inventory.addItem(InventoryItem(blockType, 1))
-                world.chunkManager.setBlockType(blockMousePos.x.toInt(), blockMousePos.y.toInt(), BlockType.AIR)
-                val id = breakSound.play(0.1f)
-                breakSound.setPitch(id, MathUtils.random(0.7f, 1.1f))
-            }
-        }
+        handleInput(delta)
 
         Static.camera.update()
         Static.batch.projectionMatrix = Static.camera.combined
         world.update()
         updateDebug()
-//        profiler.reset()
 
         clearScreen(31/255f, 203/255f, 255/255f)
+
         Static.batch.use {
             world.render()
         }
 
+        renderDebugText()
+        renderDebugShapes()
+
+        Static.engine.update(delta)
+    }
+
+    private fun handleInput(delta: Float) {
+        if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
+            Gdx.app.exit()
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.EQUALS)) {
+            Static.camera.zoom -= 0.4f * delta
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.MINUS)) {
+            Static.camera.zoom += 0.4f * delta
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.NUM_0)) {
+            Static.camera.zoom = 0.5f
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) {
+            showEntityOutline = !showEntityOutline
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F2)) {
+            showChunkOutline = !showChunkOutline
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
+            world.player[InventoryComponent.mapper]!!.inventory.clearInventory()
+        }
+
+        if (Gdx.input.isTouched) {
+            val blockPos = Static.camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f)).scl(1/8f)
+            val blockType = world.chunkManager.getBlockType(blockPos.x.toInt(), blockPos.y.toInt())
+
+            // todo: fix this
+            if (blockType != BlockType.AIR || blockType == null) {
+                world.player[InventoryComponent.mapper]!!.inventory.addItem(InventoryItem(blockType, 1))
+                world.chunkManager.setBlockType(blockPos.x.toInt(), blockPos.y.toInt(), BlockType.AIR)
+
+                val soundId = breakSound.play(0.1f)
+                breakSound.setPitch(soundId, MathUtils.random(0.7f, 1.1f))
+            }
+        }
+    }
+
+    private fun updateDebug() {
+        val unprojMousePos = Static.camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f))
+        val blockMousePos = unprojMousePos.cpy().scl(1/8f)
+        val chunkMousePos = blockMousePos.cpy().scl(1/32f)
+        val transform = world.player[TransformComponent.mapper] ?: return Utils.expectComponent("player", "transform")
+//        val rect = world.physicsWorld.getRect(world.playerItem)
+        val physics = world.player[PhysicsComponent.mapper] ?: return Utils.expectComponent("player", "physics")
+        val inventory = world.player[InventoryComponent.mapper] ?: return Utils.expectComponent("player", "inventory")
+        val inv = inventory.inventory
+        val current = inventory.current
+
+        debugLeft.clear()
+        debugLeft.add("mouse: {${unprojMousePos.x.toInt()} ${unprojMousePos.y.toInt()}} (${blockMousePos.x.toInt()} ${blockMousePos.y.toInt()}) [${chunkMousePos.x.toInt()} ${chunkMousePos.y.toInt()}]")
+        debugLeft.add("ent/items: ${Static.engine.entities.size()} / ${world.physicsWorld.countItems()}")
+//        debugLeft.add("pos/rect: (${transform.position.x.toInt()} ${transform.position.y.toInt()}) (${rect.x.toInt()} ${rect.y.toInt()})")
+        debugLeft.add("pos/rect: (${transform.position.x.toInt()} ${transform.position.y.toInt()})")
+        debugLeft.add("velocity: (${physics.velocity.x.toInt()} ${physics.velocity.y.toInt()})")
+//        debugLeft.add("isGrounded: ${world.player[PhysicsComponent.mapper].isGrounded} / ${world.playerItem.userData[PhysicsComponent.mapper].isGrounded}")
+        debugLeft.add("inv0: ${inv.array[0].item} (${inv.array[0].amount})")
+        debugLeft.add("inv1: ${inv.array[1].item} (${inv.array[1].amount})")
+        debugLeft.add("inv2: ${inv.array[2].item} (${inv.array[2].amount})")
+        debugLeft.add("inv3: ${inv.array[3].item} (${inv.array[3].amount})")
+        debugLeft.add("inv4: ${inv.array[4].item} (${inv.array[4].amount})")
+        debugLeft.add("current: $current")
+
+        debugRight.clear()
+        debugRight.add("${Gdx.graphics.framesPerSecond} fps (${(Gdx.graphics.deltaTime * 1000).toInt()}ms)")
+    }
+
+    private fun renderDebugText() {
         Static.debugBatch.use { batch ->
             debugLeft.forEachIndexed { i, str ->
                 Static.font.draw(batch, str, 4f, Static.HEIGHT - 6f - (i * 18f))
@@ -94,18 +150,21 @@ class MainScreen : KtxScreen {
                 Static.font.draw(batch, layout, Static.WIDTH - layout.width - 4f, Static.HEIGHT - layout.height + 4 - (i * 18))
             }
         }
+    }
 
+    private fun renderDebugShapes() {
         shapeDrawer.projectionMatrix = Static.camera.combined
         shapeDrawer.begin(ShapeRenderer.ShapeType.Line)
+
         if (showEntityOutline) {
             shapeDrawer.color = Color.RED
             for (item in world.physicsWorld.rects.iterator()) {
                 shapeDrawer.rect(item.x, item.y, item.w, item.h)
             }
 
-            shapeDrawer.color = Color.BLUE
-            val pos = world.playerEntity[TransformComponent.mapper]!!.position
-            shapeDrawer.line(pos.x, pos.y-1f, pos.x+8f, pos.y-1f)
+//            shapeDrawer.color = Color.BLUE
+//            val pos = world.player[TransformComponent.mapper].position
+//            shapeDrawer.line(pos.x, pos.y-1f, pos.x+8f, pos.y-1f)
         }
 
         if (showChunkOutline) {
@@ -117,38 +176,7 @@ class MainScreen : KtxScreen {
                 }
             }
         }
+
         shapeDrawer.end()
-
-        Static.engine.update(delta)
-    }
-
-    private fun updateDebug() {
-        val unprojMousePos = Static.camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f))
-        val blockMousePos = unprojMousePos.cpy().scl(1/8f)
-        val chunkMousePos = blockMousePos.cpy().scl(1/32f)
-        val transform = world.playerEntity[TransformComponent.mapper]
-        val rect = world.physicsWorld.getRect(world.playerItem)
-        val physics = world.playerEntity[PhysicsComponent.mapper]
-        val inv = world.playerEntity[InventoryComponent.mapper]!!.inventory
-        val current = world.playerEntity[InventoryComponent.mapper]!!.current
-
-        debugLeft.clear()
-        debugLeft.add("mouse: {${unprojMousePos.x.toInt()} ${unprojMousePos.y.toInt()}} (${blockMousePos.x.toInt()} ${blockMousePos.y.toInt()}) [${chunkMousePos.x.toInt()} ${chunkMousePos.y.toInt()}]")
-        debugLeft.add("ent/items: ${Static.engine.entities.size()} / ${world.physicsWorld.countItems()}")
-        debugLeft.add("pos/rect: (${transform!!.position.x.toInt()} ${transform.position.y.toInt()}) (${rect.x.toInt()} ${rect.y.toInt()})")
-        debugLeft.add("velocity: (${physics!!.velocity.x.toInt()} ${physics.velocity.y.toInt()})")
-        debugLeft.add("isGrounded: ${world.playerEntity[PhysicsComponent.mapper]!!.isGrounded} / ${world.playerItem.userData[PhysicsComponent.mapper]!!.isGrounded}")
-        debugLeft.add("inv0: ${inv.array[0].item} (${inv.array[0].amount})")
-        debugLeft.add("inv1: ${inv.array[1].item} (${inv.array[1].amount})")
-        debugLeft.add("inv2: ${inv.array[2].item} (${inv.array[2].amount})")
-        debugLeft.add("inv3: ${inv.array[3].item} (${inv.array[3].amount})")
-        debugLeft.add("inv4: ${inv.array[4].item} (${inv.array[4].amount})")
-        debugLeft.add("current: $current")
-
-        debugRight.clear()
-        debugRight.add("${Gdx.graphics.framesPerSecond} fps (${(Gdx.graphics.deltaTime * 1000).toInt()}ms)")
-//        debugRight.add("calls: ${profiler.calls}")
-//        debugRight.add("draw calls: ${profiler.drawCalls}")
-//        debugRight.add("texture bindings: ${profiler.textureBindings}")
     }
 }

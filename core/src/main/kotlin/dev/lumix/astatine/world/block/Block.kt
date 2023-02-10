@@ -8,7 +8,7 @@ class Block(val type: BlockType, private val texture: AtlasRegion?) {
         const val BLOCK_SIZE = 8f
     }
 
-    fun render(x: Int, y: Int) {
-        Static.batch.draw(texture, x * BLOCK_SIZE, y * BLOCK_SIZE)
+    fun render(blockX: Int, blockY: Int) {
+        Static.batch.draw(texture, blockX * BLOCK_SIZE, blockY * BLOCK_SIZE)
     }
 }

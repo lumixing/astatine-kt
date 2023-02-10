@@ -8,78 +8,104 @@ import dev.lumix.astatine.ecs.components.BlockComponent
 import dev.lumix.astatine.ecs.components.ItemComponent
 import dev.lumix.astatine.ecs.components.TransformComponent
 import dev.lumix.astatine.engine.Static
+import dev.lumix.astatine.engine.Utils
 import dev.lumix.astatine.world.WorldGen
+import dev.lumix.astatine.world.block.Block
 import dev.lumix.astatine.world.block.BlockType
 import ktx.ashley.get
 import ktx.assets.invoke
 import ktx.assets.pool
+import ktx.log.info
 
 class ChunkManager(private val physicsWorld: World<Entity>) {
     companion object {
         const val CHUNKS_X = 16
         const val CHUNKS_Y = 16
+        const val CHUNK_RADIUS = 3
+        const val LOADED_CHUNKS_SIZE = (CHUNK_RADIUS * 2) * (CHUNK_RADIUS * 2)
+        const val SEED = 2L
     }
 
     private val chunks: Array<Array<Chunk?>> = Array(CHUNKS_X) { Array(CHUNKS_Y) { null } }
-    private val loadedChunks: Array<Chunk?> = Array(36) { null }
+    private val loadedChunks: Array<Chunk?> = Array(LOADED_CHUNKS_SIZE) { null }
     private val blockEntities: com.badlogic.gdx.utils.Array<Entity> = com.badlogic.gdx.utils.Array()
     private val blockEntityPool = pool { Entity() }
 
     init {
-        for (y in 0 until CHUNKS_Y) {
-            for (x in 0 until CHUNKS_X) {
-                chunks[x][y] = Chunk(x, y)
+        for (chunkY in 0 until CHUNKS_Y) {
+            for (chunkX in 0 until CHUNKS_X) {
+                chunks[chunkX][chunkY] = Chunk(chunkX, chunkY)
             }
         }
 
-        WorldGen(this, 2L).generate()
+        WorldGen(this, SEED).generate()
     }
 
-    fun render() {
+    fun renderLoadedChunks() {
         for (chunk in loadedChunks) {
             chunk?.render()
         }
     }
 
-    // using chunk position
-    fun loadChunks(cx: Int, cy: Int) {
-        if (loadedChunks[21] != null && loadedChunks[21]?.x == cx && loadedChunks[21]?.y == cy)
+    fun loadChunksNear(centerChunkX: Int, centerChunkY: Int) {
+        // if center doesnt change then dont load new chunks
+        if (loadedChunks[21] != null &&
+            loadedChunks[21]?.chunkX == centerChunkX &&
+            loadedChunks[21]?.chunkY == centerChunkY)
             return;
+
         var i = 0
-        for (y in cy-3 until cy+3) {
-            for (x in cx-3 until cx+3) {
-                loadedChunks[i++] = getChunk(x, y)
+        for (chunkY in centerChunkY - CHUNK_RADIUS until centerChunkY + CHUNK_RADIUS) {
+            for (chunkX in centerChunkX - CHUNK_RADIUS until centerChunkX + CHUNK_RADIUS) {
+                loadedChunks[i++] = getChunk(chunkX, chunkY)
             }
         }
     }
 
-    private fun getChunk(x: Int, y: Int): Chunk? {
-        if (!(x in 0 until CHUNKS_X && y in 0 until CHUNKS_Y))
-            return null;
-        return chunks[x][y]
+    private fun getChunk(chunkX: Int, chunkY: Int): Chunk? {
+        if (!isValidChunkPosition(chunkX, chunkY)) return null
+        return chunks[chunkX][chunkY]
     }
 
-    fun getBlockType(x: Int, y: Int): BlockType? {
-        val chunk = getChunk(MathUtils.floor((x / Chunk.CHUNK_SIZE).toFloat()), MathUtils.floor((y / Chunk.CHUNK_SIZE).toFloat()))
-        return chunk?.getBlock(x % Chunk.CHUNK_SIZE, y % Chunk.CHUNK_SIZE);
+    private fun isValidChunkPosition(chunkX: Int, chunkY: Int): Boolean {
+        return chunkX in 0 until CHUNKS_X && chunkY in 0 until CHUNKS_Y
     }
 
-    fun setBlockType(x: Int, y: Int, type: BlockType) {
-        val chunk = getChunk(MathUtils.floor((x / Chunk.CHUNK_SIZE).toFloat()), MathUtils.floor((y / Chunk.CHUNK_SIZE).toFloat()))
-        chunk?.setBlock(x % Chunk.CHUNK_SIZE, y % Chunk.CHUNK_SIZE, type);
+    // todo: add blockToRelativeBlockPos()
+    fun getBlockType(blockX: Int, blockY: Int): BlockType? {
+        val chunkX = blockX / Chunk.CHUNK_SIZE
+        val chunkY = blockY / Chunk.CHUNK_SIZE
+        val chunk = getChunk(chunkX, chunkY) ?: return null
+
+        val relativeBlockX = blockX % Chunk.CHUNK_SIZE
+        val relativeBlockY = blockY % Chunk.CHUNK_SIZE
+        return chunk.getBlockType(relativeBlockX, relativeBlockY);
     }
 
-    // todo: have a universal unit system instead of fighting with unproj & blocks
-    fun updateBlockEntitiesNear(x: Int, y: Int) {
-        for (j in y-3..y+3) {
-            for (i in x-3..x+3) {
-                if (getBlockType(i, j) == BlockType.AIR) continue
+    fun setBlockType(blockX: Int, blockY: Int, blockType: BlockType) {
+        val chunkX = blockX / Chunk.CHUNK_SIZE
+        val chunkY = blockY / Chunk.CHUNK_SIZE
+        val chunk = getChunk(chunkX, chunkY) ?: return
+
+        val relativeBlockX = blockX % Chunk.CHUNK_SIZE
+        val relativeBlockY = blockY % Chunk.CHUNK_SIZE
+        chunk.setBlockType(relativeBlockX, relativeBlockY, blockType);
+    }
+
+    fun updateBlockEntitiesNear(blockX: Int, blockY: Int) {
+        for (relativeBlockY in blockY - CHUNK_RADIUS..blockY + CHUNK_RADIUS) {
+            for (relativeBlockX in blockX - CHUNK_RADIUS..blockX + CHUNK_RADIUS) {
+                if (getBlockType(relativeBlockX, relativeBlockY) == BlockType.AIR) continue
+
+                val unprojX = relativeBlockX * Block.BLOCK_SIZE
+                val unprojY = relativeBlockY * Block.BLOCK_SIZE
 
                 val blockEntity = blockEntityPool().apply {
-                    add(TransformComponent().apply { position.set(i*8f, j*8f) })
+                    add(TransformComponent().apply { position.set(unprojX, unprojY) })
                     add(BlockComponent())
                 }
-                val blockItem = physicsWorld.add(Item(blockEntity), i*8f, j*8f, 8f, 8f)
+
+                val blockItem = physicsWorld.add(Item(blockEntity), unprojX,unprojY, Block.BLOCK_SIZE, Block.BLOCK_SIZE)
                 val blockItemComponent = ItemComponent(blockItem)
                 blockEntity.add(blockItemComponent)
 
@@ -91,7 +117,9 @@ class ChunkManager(private val physicsWorld: World<Entity>) {
 
     fun clearBlockEntities() {
         for (entity in blockEntities) {
-            physicsWorld.remove(entity[ItemComponent.mapper]!!.item)
+            val itemComponent = entity[ItemComponent.mapper] ?: return Utils.expectComponent("block", "item")
+
+            physicsWorld.remove(itemComponent.item)
             blockEntityPool(entity)
             Static.engine.removeEntity(entity)
         }
