@@ -15,10 +15,7 @@ import dev.lumix.astatine.ecs.entities.inventory.InventoryItem
 import dev.lumix.astatine.ecs.systems.PhysicsSystem
 import dev.lumix.astatine.ecs.systems.PlayerSystem
 import dev.lumix.astatine.ecs.systems.RenderSystem
-import dev.lumix.astatine.engine.SoundAssets
-import dev.lumix.astatine.engine.Static
-import dev.lumix.astatine.engine.Utils
-import dev.lumix.astatine.engine.get
+import dev.lumix.astatine.engine.*
 import dev.lumix.astatine.world.World
 import dev.lumix.astatine.world.block.BlockType
 import dev.lumix.astatine.world.chunk.ChunkManager
@@ -31,6 +28,7 @@ class MainScreen : KtxScreen {
     private val world = World()
 
     private var breakSound = Static.assets[SoundAssets.Break]
+    private var selectionTexture = Static.assets[TextureAtlasAssets.Game].findRegion("selection")
 
     private val debugLeft = Array<String>()
     private val debugRight = Array<String>()
@@ -63,6 +61,10 @@ class MainScreen : KtxScreen {
 
         Static.batch.use {
             world.render()
+
+            val unprojMousePos = Static.camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f))
+            val blockMousePos = unprojMousePos.cpy().scl(1/8f)
+            it.draw(selectionTexture, blockMousePos.x.toInt() * 8f, blockMousePos.y.toInt() * 8f)
         }
 
         renderDebugText()

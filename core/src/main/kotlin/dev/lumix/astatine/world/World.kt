@@ -1,6 +1,7 @@
 package dev.lumix.astatine.world
 
 import com.badlogic.ashley.core.Entity
+import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector3
 import com.dongbat.jbump.World
 import dev.lumix.astatine.ecs.components.*
@@ -29,8 +30,9 @@ class World {
     fun update() {
         val transform = player[TransformComponent.mapper] ?: return Utils.expectComponent("player", "transform")
 
-        Static.camera.position.x = transform.position.x
-        Static.camera.position.y = transform.position.y
+        val camPos = Static.camera.position.cpy()
+        val finalPos = Vector3(transform.position.x, transform.position.y, 0f)
+        Static.camera.position.set(camPos.lerp(finalPos, 0.2f))
 
         val centerUnprojPos = Static.camera.unproject(Vector3(Static.WIDTH / 2f, Static.HEIGHT / 2f, 0f))
         val centerChunkPos = centerUnprojPos.cpy().scl(1 / (Block.BLOCK_SIZE * Chunk.CHUNK_SIZE))
