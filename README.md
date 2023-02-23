@@ -23,6 +23,22 @@
   <img src="https://kappa.lol/4Zgx3"/>
 </p>
 
+## features
+* world stored in chunks
+* procedural world terrain generation
+* uses entity-component-system
+* customs physics with jbump's aabb collisions
+* basic player movement
+* *very* basic inventory system
+* debug features
+  * debug overlay text (top left and right)
+  * `F1` to toggle entity collision boxes
+  * `F2` to toggle chunk borders
+  * `F3` to clear inventory
+  * `+` to zoom in camera
+  * `-` to zoom out camera
+  * `0` to reset camera zoom
+
 ## libraries used
 * [libktx](https://libktx.github.io/): game engine/framework based on [libgdx](https://libgdx.com/)
 * [jbump](https://github.com/implicit-invocation/jbump): collision detection for physics
@@ -35,6 +51,9 @@ run `gradlew build` inside the folder
 * https://github.com/egordorichev/LastTry (java)
 * https://github.com/jmrapp1/TerraLegion (java)
 * https://github.com/hexabeast/HexBox (java)
+* https://github.com/ktualhu/Minecube-Terraria-clone (java)
+* https://github.com/NaulaN/Terraria-javafx (java)
+* https://github.com/nazarlvr/Game-project (java)
 * https://github.com/sreich/ore-infinium (kotlin)
 * https://github.com/FergusGriggs/Fegaria-Remastered (python)
 
