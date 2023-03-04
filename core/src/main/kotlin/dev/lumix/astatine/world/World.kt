@@ -20,6 +20,7 @@ import ktx.ashley.has
 class World {
     val physicsWorld = World<Entity>()
     val chunkManager = ChunkManager(physicsWorld)
+    val blockEntityManager = BlockEntityManager(physicsWorld, chunkManager)
 
     val player = Player(200f, 3900f)
     private val box = Box(220f, 3900f)
@@ -45,7 +46,7 @@ class World {
         val centerChunkPosition = playerTransform.position.cpy().scl(1 / (Block.BLOCK_SIZE * Chunk.CHUNK_SIZE))
         chunkManager.loadChunksNear(centerChunkPosition.x.toInt(), centerChunkPosition.y.toInt())
 
-        chunkManager.clearBlockEntities()
+        blockEntityManager.clearBlockEntities()
 
         for (entity in Static.engine.entities.iterator()) {
             if (entity.has(BlockComponent.mapper)) continue
@@ -53,7 +54,7 @@ class World {
             val entityTransform = entity[TransformComponent.mapper] ?: return Utils.expectComponent("entity", "transform")
             val blockX = (entityTransform.position.x / Block.BLOCK_SIZE).toInt()
             val blockY = (entityTransform.position.y / Block.BLOCK_SIZE).toInt()
-            chunkManager.updateBlockEntitiesNear(blockX, blockY)
+            blockEntityManager.updateBlockEntitiesNear(blockX, blockY)
         }
     }
 

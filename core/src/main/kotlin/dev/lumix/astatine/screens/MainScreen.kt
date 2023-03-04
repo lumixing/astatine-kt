@@ -134,9 +134,8 @@ class MainScreen : KtxScreen {
         val current = playerInventory.current
 
         debugLeft.clear()
-//        debugLeft.add("ASTATINE PRE-PRE-PRE-ALPHA LEAKED BUILD (NOT LEAKED) [MAY CONTAIN YIPPERT] (PLEASE REPORT IF SO)")
         debugLeft.add("mouse: {${unprojMousePos.x.toInt()} ${unprojMousePos.y.toInt()}} (${blockMousePos.x.toInt()} ${blockMousePos.y.toInt()}) [${chunkMousePos.x.toInt()} ${chunkMousePos.y.toInt()}]")
-        debugLeft.add("ent/items: ${Static.engine.entities.size()} / ${world.physicsWorld.countItems()}")
+        debugLeft.add("ent/items/blocks: ${Static.engine.entities.size()} / ${world.physicsWorld.countItems()} / ${world.blockEntityManager.getBlockEntityCount()}")
         debugLeft.add("pos/rect: (${playerTransform.position.x.toInt()} ${playerTransform.position.y.toInt()})")
         debugLeft.add("velocity: (${playerPhysics.velocity.x.toInt()} ${playerPhysics.velocity.y.toInt()})")
         debugLeft.add("inv0: ${inventory.array[0].item} (${inventory.array[0].amount})")
@@ -146,7 +145,6 @@ class MainScreen : KtxScreen {
         debugLeft.add("inv4: ${inventory.array[4].item} (${inventory.array[4].amount})")
         debugLeft.add("current: $current")
         debugLeft.add("digradius: ${Static.digRadius}")
-        debugLeft.add("bitches: 0")
 
         debugRight.clear()
         debugRight.add("${Gdx.graphics.framesPerSecond} fps (${(Gdx.graphics.deltaTime * 1000).toInt()}ms)")
