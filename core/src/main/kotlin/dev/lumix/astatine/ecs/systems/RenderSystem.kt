@@ -26,6 +26,7 @@ class RenderSystem : SortedIteratingSystem(
 
         Static.batch.use { batch ->
             sprite.sprite.setPosition(transform.position.x + sprite.offset.x, transform.position.y + sprite.offset.y)
+            sprite.sprite.setScale(transform.scale.x, transform.scale.y)
             sprite.sprite.rotation = transform.rotation * MathUtils.radiansToDegrees
             sprite.sprite.draw(batch)
         }

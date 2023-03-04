@@ -4,18 +4,19 @@ import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.systems.IteratingSystem
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.math.MathUtils
+import com.badlogic.gdx.math.Vector3
 import com.dongbat.jbump.Collisions
-import com.dongbat.jbump.World
-import dev.lumix.astatine.ecs.components.ItemComponent
-import dev.lumix.astatine.ecs.components.PhysicsComponent
-import dev.lumix.astatine.ecs.components.PlayerComponent
-import dev.lumix.astatine.ecs.components.TransformComponent
-import dev.lumix.astatine.engine.PlayerCollisionFilter
-import dev.lumix.astatine.engine.Utils
+import dev.lumix.astatine.ecs.components.*
+import dev.lumix.astatine.ecs.entities.Item
+import dev.lumix.astatine.ecs.entities.inventory.InventoryItem
+import dev.lumix.astatine.engine.*
+import dev.lumix.astatine.world.World
+import dev.lumix.astatine.world.block.BlockType
 import ktx.ashley.allOf
 import ktx.ashley.get
 
-class PlayerSystem(val world: World<Entity>) : IteratingSystem(
+class PlayerSystem(val world: World) : IteratingSystem(
     allOf(PlayerComponent::class).get()
 ) {
     companion object {
@@ -40,7 +41,7 @@ class PlayerSystem(val world: World<Entity>) : IteratingSystem(
             player.isJumping = false
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-            world.project(item.item,
+            world.physicsWorld.project(item.item,
                 transform.position.x, transform.position.y,
                 physics.bounds.x, physics.bounds.y,
                 transform.position.x, transform.position.y - .1f,
@@ -64,6 +65,29 @@ class PlayerSystem(val world: World<Entity>) : IteratingSystem(
             physics.velocity.x = Utils.approach(physics.velocity.x, WALK_SPEED, WALK_ACCELERATION * delta)
         } else {
             physics.velocity.x = Utils.approach(physics.velocity.x, 0f, WALK_ACCELERATION * delta)
+        }
+
+        // mouse input
+        if (Gdx.input.isTouched) {
+            val blockPos = Static.camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f)).scl(1/8f)
+
+            for (newBlockPosX in blockPos.x.toInt()-Static.digRadius..blockPos.x.toInt()+Static.digRadius) {
+                for (newBlockPosY in blockPos.y.toInt()-Static.digRadius..blockPos.y.toInt()+Static.digRadius) {
+                    val blockType = world.chunkManager.getBlockType(newBlockPosX, newBlockPosY)
+                    if (blockType == BlockType.AIR || blockType == null) continue
+
+                    Static.assets[SoundAssets.Stone].play(0.1f)
+                    world.player[InventoryComponent.mapper]!!.inventory.addItem(InventoryItem(blockType, 1))
+                    world.chunkManager.setBlockType(newBlockPosX, newBlockPosY, BlockType.AIR)
+
+                    // spawn item
+                    val itemPositionX = newBlockPosX * 8f - 4 + MathUtils.random(-4, 4)
+                    val itemPositionY = newBlockPosY * 8f + MathUtils.random(-4, 4)
+                    val itemEntity = Item(itemPositionX, itemPositionY, blockType)
+                    itemEntity.addItemToEntity(world.physicsWorld)
+                }
+            }
+
         }
     }
 }

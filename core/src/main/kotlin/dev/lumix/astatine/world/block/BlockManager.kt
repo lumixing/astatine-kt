@@ -9,11 +9,12 @@ class BlockManager {
         private val blocks = HashMap<BlockType, Block>()
 
         init {
-            blocks[BlockType.AIR]   = Block(BlockType.AIR   , null)
-            blocks[BlockType.GRASS] = Block(BlockType.GRASS , Static.assets[TextureAtlasAssets.Game].findRegion("grass"))
-            blocks[BlockType.DIRT]  = Block(BlockType.DIRT  , Static.assets[TextureAtlasAssets.Game].findRegion("dirt"))
-            blocks[BlockType.STONE] = Block(BlockType.STONE , Static.assets[TextureAtlasAssets.Game].findRegion("stone"))
-            blocks[BlockType.ORE]   = Block(BlockType.ORE   , Static.assets[TextureAtlasAssets.Game].findRegion("ore"))
+            blocks[BlockType.AIR]           = Block(BlockType.AIR           , null)
+            blocks[BlockType.GRASS]         = Block(BlockType.GRASS         , Static.assets[TextureAtlasAssets.Game].findRegion("grass"))
+            blocks[BlockType.DIRT]          = Block(BlockType.DIRT          , Static.assets[TextureAtlasAssets.Game].findRegion("dirt"))
+            blocks[BlockType.STONE]         = Block(BlockType.STONE         , Static.assets[TextureAtlasAssets.Game].findRegion("stone"))
+            blocks[BlockType.ORE]           = Block(BlockType.ORE           , Static.assets[TextureAtlasAssets.Game].findRegion("ore"))
+            blocks[BlockType.DEEPSLATE]     = Block(BlockType.DEEPSLATE     , Static.assets[TextureAtlasAssets.Game].findRegion("deepslate"))
         }
 
         fun getBlock(type: BlockType): Block? {

@@ -2,7 +2,6 @@ package dev.lumix.astatine.world.chunk
 
 import dev.lumix.astatine.world.block.BlockManager
 import dev.lumix.astatine.world.block.BlockType
-import ktx.log.info
 
 class Chunk(val chunkX: Int, val chunkY: Int) {
     companion object {
@@ -14,24 +13,29 @@ class Chunk(val chunkX: Int, val chunkY: Int) {
     fun render() {
         for (relativeBlockY in 0 until CHUNK_SIZE) {
             for (relativeBlockX in 0 until CHUNK_SIZE) {
-                val block = getBlockType(relativeBlockX, relativeBlockY) ?: continue
-                if (block == BlockType.AIR) continue
+                // dont render if block is null or air
+                val blockType = getBlockType(relativeBlockX, relativeBlockY) ?: continue
+                if (blockType == BlockType.AIR) continue
 
-                val blockX = relativeBlockX + CHUNK_SIZE * this.chunkX
-                val blockY = relativeBlockY + CHUNK_SIZE * this.chunkY
-                BlockManager.getBlock(block)?.render(blockX, blockY)
+                // chunk relative to absolute block position
+                val blockX = relativeBlockX + CHUNK_SIZE * chunkX
+                val blockY = relativeBlockY + CHUNK_SIZE * chunkY
+                BlockManager.getBlock(blockType)?.render(blockX, blockY)
             }
         }
     }
 
+    // returns null if invalid block position
     fun getBlockType(relativeBlockX: Int, relativeBlockY: Int): BlockType? {
         if (!isValidBlockPosition(relativeBlockX, relativeBlockY)) return null
         return blocks[relativeBlockX][relativeBlockY]
     }
 
-    fun setBlockType(relativeBlockX: Int, relativeBlockY: Int, blockType: BlockType) {
-        if (!isValidBlockPosition(relativeBlockX, relativeBlockY)) return
+    // returns true if succesfully sets a block
+    fun setBlockType(relativeBlockX: Int, relativeBlockY: Int, blockType: BlockType): Boolean {
+        if (!isValidBlockPosition(relativeBlockX, relativeBlockY)) return false
         blocks[relativeBlockX][relativeBlockY] = blockType
+        return true
     }
 
     private fun isValidBlockPosition(relativeBlockX: Int, relativeBlockY: Int): Boolean {

@@ -19,5 +19,6 @@ class Static {
         }
         val engine = PooledEngine()
         lateinit var font: BitmapFont
+        var digRadius = 0
     }
 }

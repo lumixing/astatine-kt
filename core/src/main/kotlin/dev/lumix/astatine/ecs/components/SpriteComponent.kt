@@ -13,7 +13,7 @@ class SpriteComponent : Component {
         val mapper = mapperFor<SpriteComponent>()
     }
 
-    val sprite = Sprite(Static.assets[TextureAtlasAssets.Game].findRegion("lumix"))
-    val offset: Vector2 = Vector2.Zero
+    var sprite = Sprite(Static.assets[TextureAtlasAssets.Game].findRegion("lumix"))
+    val offset: Vector2 = Vector2(0f, 0f)
     var z = 0
 }

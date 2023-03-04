@@ -10,5 +10,6 @@ class TransformComponent : Component {
     }
 
     val position = Vector2()
+    val scale = Vector2(1f, 1f)
     var rotation = 0f // in radians
 }
