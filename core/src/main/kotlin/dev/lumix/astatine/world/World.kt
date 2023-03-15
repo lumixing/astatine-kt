@@ -1,76 +1,64 @@
 package dev.lumix.astatine.world
 
 import com.badlogic.ashley.core.Entity
-import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer
-import com.badlogic.gdx.utils.Array
-import dev.lumix.astatine.ecs.components.PhysicsComponent
-import dev.lumix.astatine.ecs.components.PositionComponent
-import dev.lumix.astatine.ecs.components.SpriteComponent
+import com.dongbat.jbump.World
+import dev.lumix.astatine.ecs.components.BlockComponent
+import dev.lumix.astatine.ecs.components.TransformComponent
+import dev.lumix.astatine.ecs.entities.Player
 import dev.lumix.astatine.engine.Static
-import dev.lumix.astatine.engine.TextureAtlasAssets
-import dev.lumix.astatine.engine.get
-import dev.lumix.astatine.world.block.BlockType
+import dev.lumix.astatine.engine.Utils
+import dev.lumix.astatine.world.block.Block
+import dev.lumix.astatine.world.chunk.Chunk
 import dev.lumix.astatine.world.chunk.ChunkManager
-import ktx.ashley.entity
 import ktx.ashley.get
-import ktx.ashley.with
-import ktx.box2d.createWorld
-import ktx.log.info
+import ktx.ashley.has
 
 class World {
-    val world = createWorld(Vector2(0f, -130f))
-    val chunkManager = ChunkManager(world)
-    val debug = Box2DDebugRenderer()
-    private val entities: Array<Entity> = Array()
-    private val box = Static.engine.entity {
-        with<PositionComponent> { position.set(120f, 3950f) }
-        with<SpriteComponent> {
-            sprite.setRegion(Static.assets[TextureAtlasAssets.Game].findRegion("lumix"))
-            offset.set(-4f, -4f)
-        }
-        with<PhysicsComponent>()
-    }
+    val physicsWorld = World<Entity>()
+    val chunkManager = ChunkManager(physicsWorld)
+    val blockEntityManager = BlockEntityManager(physicsWorld, chunkManager)
 
-    fun show() {
-        entities.add(box)
-        for (i in 0..10) {
-            for (j in 0..10) {
-                val ent = Static.engine.entity {
-                    with<PositionComponent> { position.set(120f + i * 10, 3950f + j * 10) }
-                    with<SpriteComponent> {
-                        sprite.setRegion(Static.assets[TextureAtlasAssets.Game].findRegion("stone"))
-                        offset.set(-4f, -4f)
-                    }
-                    with<PhysicsComponent>()
-                }
-                entities.add(ent)
-            }
-        }
+    val player = Player(200f, 3900f)
+    private var blockEntityTimer = 0f
+
+    init {
+        player.addItemToEntity(physicsWorld)
     }
 
     fun update() {
-        world.step(1/60f, 6, 2)
-        val centerUnprojPos = Static.camera.unproject(Vector3(1280f / 2f, 720f / 2f, 0f))
-        val centerChunkPos = centerUnprojPos.cpy().scl(1/256f)
-        chunkManager.loadChunks(centerChunkPos.x.toInt(), centerChunkPos.y.toInt())
+        blockEntityTimer += Gdx.graphics.deltaTime
+        val playerTransform = player[TransformComponent.mapper] ?: return Utils.expectComponent("player", "transform")
 
-        chunkManager.clearBlockEntities()
-        entities.forEach {
-            it[PositionComponent.mapper]?.let { position ->
-                chunkManager.initBlockEntitiesNear((position.position.x / 8f).toInt(), (position.position.y / 8f).toInt())
-            }
+        // enable for camera peeking
+//        val mouseX = Gdx.input.x - Static.WIDTH / 2
+//        val mouseY = (Gdx.input.y - Static.HEIGHT / 2)*-1
+        val cameraPosition = Static.camera.position.cpy()
+        val finalCameraPosition = Vector3(playerTransform.position.x, playerTransform.position.y, 0f)
+//        val finalPos = Vector3(transform.position.x + mouseX/5, transform.position.y + mouseY/5, 0f)
+        Static.camera.position.set(cameraPosition.lerp(finalCameraPosition, 0.2f))
+
+        val centerChunkPosition = playerTransform.position.cpy().scl(1 / (Block.BLOCK_SIZE * Chunk.CHUNK_SIZE))
+        chunkManager.loadChunksNear(centerChunkPosition.x.toInt(), centerChunkPosition.y.toInt())
+
+        // update block entities every 100ms
+        if (blockEntityTimer < 1/10f) return
+        blockEntityTimer = 0f
+
+        blockEntityManager.clearBlockEntities()
+
+        for (entity in Static.engine.entities.iterator()) {
+            if (entity.has(BlockComponent.mapper)) continue
+
+            val entityTransform = entity[TransformComponent.mapper] ?: return Utils.expectComponent("entity", "transform")
+            val blockX = (entityTransform.position.x / Block.BLOCK_SIZE).toInt()
+            val blockY = (entityTransform.position.y / Block.BLOCK_SIZE).toInt()
+            blockEntityManager.updateBlockEntitiesNear(blockX, blockY)
         }
     }
 
-    fun breakBlock(unprojectedMouse: Vector3) {
-        unprojectedMouse.scl(1/8f)
-        info { "breaking block at (${unprojectedMouse.x}, ${unprojectedMouse.y})" }
-        chunkManager.setBlock(unprojectedMouse.x.toInt(), unprojectedMouse.y.toInt(), BlockType.AIR)
-    }
-
     fun render() {
-        chunkManager.render()
+        chunkManager.renderLoadedChunks()
     }
 }

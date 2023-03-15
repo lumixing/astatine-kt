@@ -5,5 +5,6 @@ enum class BlockType(i: Int) {
     GRASS(1),
     DIRT(2),
     STONE(3),
-    ORE(4)
+    ORE(4),
+    DEEPSLATE(5)
 }

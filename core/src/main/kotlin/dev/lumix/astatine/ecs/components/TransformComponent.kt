@@ -4,11 +4,12 @@ import com.badlogic.ashley.core.Component
 import com.badlogic.gdx.math.Vector2
 import ktx.ashley.mapperFor
 
-class PositionComponent : Component {
+class TransformComponent : Component {
     companion object {
-        val mapper = mapperFor<PositionComponent>()
+        val mapper = mapperFor<TransformComponent>()
     }
 
     val position = Vector2()
-    var angle = 0f // radians
+    val scale = Vector2(1f, 1f)
+    var rotation = 0f // in radians
 }

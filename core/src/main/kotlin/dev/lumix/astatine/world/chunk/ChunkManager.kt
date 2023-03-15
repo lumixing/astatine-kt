@@ -1,119 +1,94 @@
 package dev.lumix.astatine.world.chunk
 
 import com.badlogic.ashley.core.Entity
-import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.physics.box2d.BodyDef
-import com.badlogic.gdx.physics.box2d.World
-import dev.lumix.astatine.ecs.components.PhysicsComponent
-import dev.lumix.astatine.ecs.components.PositionComponent
-import dev.lumix.astatine.engine.Static
-import dev.lumix.astatine.world.WorldGeneration
+import com.dongbat.jbump.World
+import dev.lumix.astatine.world.WorldGen
 import dev.lumix.astatine.world.block.BlockType
-import ktx.ashley.get
-import ktx.assets.invoke
-import ktx.assets.pool
+import ktx.log.debug
 
-class ChunkManager(private val world: World) {
+class ChunkManager(private val physicsWorld: World<Entity>) {
     companion object {
-        const val chunksX = 16
-        const val chunksY = 16
+        const val CHUNKS_X = 16
+        const val CHUNKS_Y = 16
+        const val CHUNK_RADIUS = 3
+        const val LOADED_CHUNKS_SIZE = (CHUNK_RADIUS * 2) * (CHUNK_RADIUS * 2)
+        const val SEED = 2L
     }
-    private val chunks: Array<Array<Chunk?>> = Array(chunksX) { Array(chunksY) { null } }
-    private val loadedChunks: Array<Chunk?> = Array(36) { null }
-    val activeBlockEntities: com.badlogic.gdx.utils.Array<Entity> = com.badlogic.gdx.utils.Array()
-    private val blockEntitiesPool = pool { Entity() }
-    val seed = MathUtils.random(99999999L)
+
+    // todo: use HashMap<Position, Chunk> instead of Array?
+    private val chunks: Array<Array<Chunk?>> = Array(CHUNKS_X) { Array(CHUNKS_Y) { null } }
+    private val loadedChunks: Array<Chunk?> = Array(LOADED_CHUNKS_SIZE) { null }
 
     init {
         initChunks()
-        WorldGeneration(this, seed).generate()
+        debug { "initialized ${CHUNKS_X * CHUNKS_Y} chunks" }
+        WorldGen(this, SEED).generate()
     }
 
     private fun initChunks() {
-        for (y in 0 until chunksY) {
-            for (x in 0 until chunksX) {
-                chunks[x][y] = Chunk(x, y)
+        for (chunkY in 0 until CHUNKS_Y) {
+            for (chunkX in 0 until CHUNKS_X) {
+                chunks[chunkX][chunkY] = Chunk(chunkX, chunkY)
             }
         }
     }
 
-    fun render() {
+    fun renderAllChunks() {
+        for (chunkY in 0 until CHUNKS_Y) {
+            for (chunkX in 0 until CHUNKS_X) {
+                getChunk(chunkX, chunkY)?.render()
+            }
+        }
+    }
+
+    fun renderLoadedChunks() {
         for (chunk in loadedChunks) {
             chunk?.render()
         }
     }
 
-    // cx, cy are center chunk coords
-    fun loadChunks(cx: Int, cy: Int) {
-        if (loadedChunks[21] != null && loadedChunks[21]?.x == cx && loadedChunks[21]?.y == cy)
-            return;
+    fun loadChunksNear(centerChunkX: Int, centerChunkY: Int) {
+        // if center doesnt change then dont load new chunks
+        if (loadedChunks[21] != null &&
+            loadedChunks[21]?.chunkX == centerChunkX &&
+            loadedChunks[21]?.chunkY == centerChunkY)
+            return
+
         var i = 0
-        for (y in cy-3 until cy+3) {
-            for (x in cx-3 until cx+3) {
-                loadedChunks[i++] = getChunk(x, y)
+        for (chunkY in centerChunkY - CHUNK_RADIUS until centerChunkY + CHUNK_RADIUS) {
+            for (chunkX in centerChunkX - CHUNK_RADIUS until centerChunkX + CHUNK_RADIUS) {
+                loadedChunks[i++] = getChunk(chunkX, chunkY)
             }
         }
     }
 
-    private fun getChunk(x: Int, y: Int): Chunk? {
-        if (!(x in 0 until chunksX && y in 0 until chunksY))
-            return null;
-        return chunks[x][y]
+    private fun getChunk(chunkX: Int, chunkY: Int): Chunk? {
+        if (!isValidChunkPosition(chunkX, chunkY)) return null
+        return chunks[chunkX][chunkY]
     }
 
-    fun getBlock(x: Int, y: Int): BlockType? {
-        val chunk = getChunk(MathUtils.floor((x / Chunk.chunkSize).toFloat()), MathUtils.floor((y / Chunk.chunkSize).toFloat()))
-        return chunk?.getBlock(x % Chunk.chunkSize, y % Chunk.chunkSize);
+    private fun isValidChunkPosition(chunkX: Int, chunkY: Int): Boolean {
+        return chunkX in 0 until CHUNKS_X && chunkY in 0 until CHUNKS_Y
     }
 
-    fun setBlock(x: Int, y: Int, type: BlockType) {
-        val chunk = getChunk(MathUtils.floor((x / Chunk.chunkSize).toFloat()), MathUtils.floor((y / Chunk.chunkSize).toFloat()))
-        chunk?.setBlock(x % Chunk.chunkSize, y % Chunk.chunkSize, type);
+    // todo: add absoluteToRelativeBlockPosition()
+    fun getBlockType(blockX: Int, blockY: Int): BlockType? {
+        val chunkX = blockX / Chunk.CHUNK_SIZE
+        val chunkY = blockY / Chunk.CHUNK_SIZE
+        val chunk = getChunk(chunkX, chunkY) ?: return null
+
+        val relativeBlockX = blockX % Chunk.CHUNK_SIZE
+        val relativeBlockY = blockY % Chunk.CHUNK_SIZE
+        return chunk.getBlockType(relativeBlockX, relativeBlockY);
     }
 
-    fun initBlockEntitiesNear(x: Int, y: Int) {
-        for (j in y-3 until y+3) {
-            for (i in x-3 until x+3) {
-                // overlapping block entities optimization
-                var already = false
-                for (it in activeBlockEntities) {
-                    // wtf is this ye dont ask best way to do inline
-                    if ((it[PositionComponent.mapper]?.position?.x?.div(8f))?.toInt() == i &&
-                        (it[PositionComponent.mapper]?.position?.y?.div(8f))?.toInt() == j) {
-                        already = true
-                        break
-                    }
-                }
-                if (already) continue
+    fun setBlockType(blockX: Int, blockY: Int, blockType: BlockType): Boolean {
+        val chunkX = blockX / Chunk.CHUNK_SIZE
+        val chunkY = blockY / Chunk.CHUNK_SIZE
+        val chunk = getChunk(chunkX, chunkY) ?: return false
 
-                if (getBlock(i, j) == BlockType.AIR) continue
-                val px = i * 8f
-                val py = j * 8f
-
-                val ent = blockEntitiesPool()
-
-                val positionComponent = PositionComponent().apply { position.set(px, py) }
-                val physicsComponent = PhysicsComponent().apply { type = BodyDef.BodyType.StaticBody }
-//                val spriteComponent = SpriteComponent().apply { sprite.setRegion(Static.assets[TextureAtlasAssets.Game].findRegion("lumix")) }
-
-                ent.add(positionComponent)
-                ent.add(physicsComponent)
-//                ent.add(spriteComponent)
-
-                activeBlockEntities.add(ent)
-                Static.engine.addEntity(ent)
-            }
-        }
-    }
-
-    fun clearBlockEntities() {
-        activeBlockEntities.forEach { entity ->
-            entity[PhysicsComponent.mapper]?.let { physics ->
-                world.destroyBody(physics.body)
-            }
-            blockEntitiesPool(entity)
-            Static.engine.removeEntity(entity)
-        }
-        activeBlockEntities.clear()
+        val relativeBlockX = blockX % Chunk.CHUNK_SIZE
+        val relativeBlockY = blockY % Chunk.CHUNK_SIZE
+        return chunk.setBlockType(relativeBlockX, relativeBlockY, blockType);
     }
 }

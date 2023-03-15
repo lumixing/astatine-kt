@@ -7,6 +7,7 @@ buildscript {
 		gradlePluginPortal()
 		maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
 		maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+		maven { url 'https://repo.spongepowered.org/repository/maven-public/' }
 	}
 	dependencies {
 		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
@@ -27,6 +28,10 @@ buildscript {
 allprojects {
 	apply plugin: 'eclipse'
 	apply plugin: 'idea'
+
+	repositories {
+		maven { url 'https://jitpack.io' }
+	}
 }
 
 configure(subprojects) {
@@ -47,6 +52,10 @@ configure(subprojects) {
 				because("CVE-2021-44228, CVE-2021-45046, CVE-2021-45105: Log4j vulnerable to remote code execution and other critical security vulnerabilities")
 			}
 		}
+
+		implementation 'com.github.tommyettinger:jbump:v1.0.1'
+		implementation "org.spongepowered:noise:2.0.0-SNAPSHOT"
+		implementation "com.sudoplay.joise:joise:1.1.0"
 	}
 
 }

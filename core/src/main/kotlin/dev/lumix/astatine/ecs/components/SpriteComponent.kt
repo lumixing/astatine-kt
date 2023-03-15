@@ -13,8 +13,7 @@ class SpriteComponent : Component {
         val mapper = mapperFor<SpriteComponent>()
     }
 
-    // todo: add default error texture like mc?
-    val sprite = Sprite(Static.assets[TextureAtlasAssets.Game].findRegion("lumix"))
-    val offset = Vector2(0f, 0f)
+    var sprite = Sprite(Static.assets[TextureAtlasAssets.Game].findRegion("lumix"))
+    val offset: Vector2 = Vector2(0f, 0f)
     var z = 0
 }

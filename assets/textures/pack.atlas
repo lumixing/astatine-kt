@@ -4,30 +4,44 @@ size: 32, 16
 format: RGBA8888
 filter: Nearest, Nearest
 repeat: none
-dirt
-  rotate: false
-  xy: 8, 0
-  size: 8, 8
-  orig: 8, 8
-  offset: 0, 0
-  index: -1
-grass
+deepslate
   rotate: false
   xy: 0, 0
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
-lumix
+dirt
+  rotate: false
+  xy: 16, 8
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+grass
   rotate: false
   xy: 8, 8
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
+lumix
+  rotate: false
+  xy: 8, 0
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
 ore
   rotate: false
-  xy: 16, 8
+  xy: 16, 0
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+selection
+  rotate: false
+  xy: 24, 8
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
