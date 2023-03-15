@@ -1,12 +1,10 @@
 package dev.lumix.astatine.world.chunk
 
-import com.badlogic.ashley.core.Entity
-import com.dongbat.jbump.World
 import dev.lumix.astatine.world.WorldGen
 import dev.lumix.astatine.world.block.BlockType
 import ktx.log.debug
 
-class ChunkManager(private val physicsWorld: World<Entity>) {
+class ChunkManager {
     companion object {
         const val CHUNKS_X = 16
         const val CHUNKS_Y = 16
@@ -15,7 +13,7 @@ class ChunkManager(private val physicsWorld: World<Entity>) {
         const val SEED = 2L
     }
 
-    // todo: use HashMap<Position, Chunk> instead of Array?
+    // todo: use HashMap<Position, Chunk> instead of Array? (tried, not rly good, search other method!)
     private val chunks: Array<Array<Chunk?>> = Array(CHUNKS_X) { Array(CHUNKS_Y) { null } }
     private val loadedChunks: Array<Chunk?> = Array(LOADED_CHUNKS_SIZE) { null }
 
@@ -48,6 +46,7 @@ class ChunkManager(private val physicsWorld: World<Entity>) {
     }
 
     fun loadChunksNear(centerChunkX: Int, centerChunkY: Int) {
+        // todo: hardcoded af, change it!
         // if center doesnt change then dont load new chunks
         if (loadedChunks[21] != null &&
             loadedChunks[21]?.chunkX == centerChunkX &&
@@ -71,7 +70,7 @@ class ChunkManager(private val physicsWorld: World<Entity>) {
         return chunkX in 0 until CHUNKS_X && chunkY in 0 until CHUNKS_Y
     }
 
-    // todo: add absoluteToRelativeBlockPosition()
+    // todo: add Utils::absoluteToRelativeBlockPosition()
     fun getBlockType(blockX: Int, blockY: Int): BlockType? {
         val chunkX = blockX / Chunk.CHUNK_SIZE
         val chunkY = blockY / Chunk.CHUNK_SIZE

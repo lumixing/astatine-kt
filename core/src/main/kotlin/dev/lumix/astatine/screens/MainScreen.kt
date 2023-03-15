@@ -44,17 +44,21 @@ class MainScreen : KtxScreen {
     }
 
     override fun render(delta: Float) {
+        // input
         handleInput(delta)
 
+        // update
         Static.camera.update()
         Static.batch.projectionMatrix = Static.camera.combined
         world.update()
         updateDebug()
 
+        // render
         clearScreen(31/255f, 203/255f, 255/255f)
         Static.batch.use {
             world.render()
 
+            // render mouse selection sprite
             val unprojMousePos = Static.camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f))
             val blockMousePos = unprojMousePos.cpy().scl(1/8f)
             it.draw(selectionTexture, blockMousePos.x.toInt() * 8f, blockMousePos.y.toInt() * 8f)
@@ -109,6 +113,7 @@ class MainScreen : KtxScreen {
             Static.assets[SoundAssets.Nuke].play(0.1f)
             debug { "removed $i pickable items" }
         }
+        // todo: REMOVE THIS?
         if (Gdx.input.isKeyJustPressed(Input.Keys.F12)) {
             if (MathUtils.randomBoolean(0.05f)) {
                 Static.assets[SoundAssets.Dick].play(0.1f)
@@ -122,6 +127,7 @@ class MainScreen : KtxScreen {
         }
     }
 
+    // todo: objectify this shit (maybe) research more efficient methods
     private fun updateDebug() {
         val unprojMousePos = Static.camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f))
         val blockMousePos = unprojMousePos.cpy().scl(1/8f)

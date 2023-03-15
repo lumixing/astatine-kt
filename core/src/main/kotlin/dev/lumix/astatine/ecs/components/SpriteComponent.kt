@@ -8,6 +8,7 @@ import dev.lumix.astatine.engine.TextureAtlasAssets
 import dev.lumix.astatine.engine.get
 import ktx.ashley.mapperFor
 
+// used for rendering a sprite
 class SpriteComponent : Component {
     companion object {
         val mapper = mapperFor<SpriteComponent>()

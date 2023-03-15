@@ -6,6 +6,8 @@ import dev.lumix.astatine.world.block.BlockType
 import dev.lumix.astatine.world.chunk.Chunk
 import dev.lumix.astatine.world.chunk.ChunkManager
 
+// really junky and old world gen, will be replaced some time™ soon!
+// dont waste time to understand it
 class WorldGen(private val chunkManager: ChunkManager, private val seed: Long = 0) {
     companion object {
         const val MAX_BLOCK_X = ChunkManager.CHUNKS_X * Chunk.CHUNK_SIZE

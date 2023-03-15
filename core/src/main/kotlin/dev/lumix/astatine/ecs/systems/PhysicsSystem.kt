@@ -10,6 +10,7 @@ import ktx.ashley.allOf
 import ktx.ashley.get
 import ktx.ashley.has
 
+// used for updating velocities and collision checking
 class PhysicsSystem(val world: World<Entity>) : IteratingSystem(
     allOf(TransformComponent::class, PhysicsComponent::class, ItemComponent::class).get()
 ) {
