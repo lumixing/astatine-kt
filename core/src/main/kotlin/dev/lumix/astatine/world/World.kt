@@ -1,17 +1,15 @@
 package dev.lumix.astatine.world
 
 import com.badlogic.ashley.core.Entity
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.math.Vector3
 import com.dongbat.jbump.World
 import dev.lumix.astatine.ecs.components.BlockComponent
 import dev.lumix.astatine.ecs.components.TransformComponent
-import dev.lumix.astatine.ecs.entities.Box
-import dev.lumix.astatine.ecs.entities.Item
 import dev.lumix.astatine.ecs.entities.Player
 import dev.lumix.astatine.engine.Static
 import dev.lumix.astatine.engine.Utils
 import dev.lumix.astatine.world.block.Block
-import dev.lumix.astatine.world.block.BlockType
 import dev.lumix.astatine.world.chunk.Chunk
 import dev.lumix.astatine.world.chunk.ChunkManager
 import ktx.ashley.get
@@ -23,16 +21,14 @@ class World {
     val blockEntityManager = BlockEntityManager(physicsWorld, chunkManager)
 
     val player = Player(200f, 3900f)
-    private val box = Box(220f, 3900f)
-    private val item = Item(180f, 4000f, BlockType.DEEPSLATE)
+    private var blockEntityTimer = 0f
 
     init {
         player.addItemToEntity(physicsWorld)
-        box.addItemToEntity(physicsWorld)
-        item.addItemToEntity(physicsWorld)
     }
 
     fun update() {
+        blockEntityTimer += Gdx.graphics.deltaTime
         val playerTransform = player[TransformComponent.mapper] ?: return Utils.expectComponent("player", "transform")
 
         // enable for camera peeking
@@ -45,6 +41,10 @@ class World {
 
         val centerChunkPosition = playerTransform.position.cpy().scl(1 / (Block.BLOCK_SIZE * Chunk.CHUNK_SIZE))
         chunkManager.loadChunksNear(centerChunkPosition.x.toInt(), centerChunkPosition.y.toInt())
+
+        // update block entities every 100ms
+        if (blockEntityTimer < 1/10f) return
+        blockEntityTimer = 0f
 
         blockEntityManager.clearBlockEntities()
 

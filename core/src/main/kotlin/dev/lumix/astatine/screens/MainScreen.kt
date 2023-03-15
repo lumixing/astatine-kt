@@ -22,7 +22,6 @@ import ktx.ashley.get
 import ktx.ashley.has
 import ktx.graphics.use
 import ktx.log.debug
-import ktx.scene2d.vis.*
 
 class MainScreen : KtxScreen {
     private val world = World()
@@ -31,7 +30,7 @@ class MainScreen : KtxScreen {
     private val debugLeft = Array<String>()
     private val debugRight = Array<String>()
     private val shapeDrawer = ShapeRenderer()
-    private var showEntityOutline = false
+    private var showEntityOutline = true
     private var showChunkOutline = false
 
     override fun show() {
