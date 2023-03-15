@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 
 class Static {
+    // why use injections haha..
     companion object {
         const val WIDTH = 1280
         const val HEIGHT = 720

@@ -16,6 +16,7 @@ import dev.lumix.astatine.world.block.BlockType
 import ktx.ashley.allOf
 import ktx.ashley.get
 
+// used for managing player input
 class PlayerSystem(val world: World) : IteratingSystem(
     allOf(PlayerComponent::class).get()
 ) {
@@ -68,6 +69,7 @@ class PlayerSystem(val world: World) : IteratingSystem(
         }
 
         // mouse input
+        // todo: make this better pls thx
         if (Gdx.input.isTouched) {
             val blockPos = Static.camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f)).scl(1/8f)
 

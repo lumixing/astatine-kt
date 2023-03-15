@@ -17,14 +17,12 @@ import ktx.ashley.has
 
 class World {
     val physicsWorld = World<Entity>()
-    val chunkManager = ChunkManager(physicsWorld)
+    val chunkManager = ChunkManager()
     val blockEntityManager = BlockEntityManager(physicsWorld, chunkManager)
-
-    val player = Player(200f, 3900f)
     private var blockEntityTimer = 0f
 
-    init {
-        player.addItemToEntity(physicsWorld)
+    val player = Player(200f, 3900f).apply {
+        addItemToEntity(physicsWorld)
     }
 
     fun update() {
@@ -36,18 +34,24 @@ class World {
 //        val mouseY = (Gdx.input.y - Static.HEIGHT / 2)*-1
         val cameraPosition = Static.camera.position.cpy()
         val finalCameraPosition = Vector3(playerTransform.position.x, playerTransform.position.y, 0f)
-//        val finalPos = Vector3(transform.position.x + mouseX/5, transform.position.y + mouseY/5, 0f)
+//        val finalCameraPosition = Vector3(transform.position.x + mouseX/5, transform.position.y + mouseY/5, 0f)
         Static.camera.position.set(cameraPosition.lerp(finalCameraPosition, 0.2f))
 
         val centerChunkPosition = playerTransform.position.cpy().scl(1 / (Block.BLOCK_SIZE * Chunk.CHUNK_SIZE))
         chunkManager.loadChunksNear(centerChunkPosition.x.toInt(), centerChunkPosition.y.toInt())
 
         // update block entities every 100ms
-        if (blockEntityTimer < 1/10f) return
-        blockEntityTimer = 0f
+        if (blockEntityTimer > 1/10f) {
+            updateBlockEntities()
+            blockEntityTimer = 0f
+        }
+    }
 
+    // update block entities for every entity except block entities
+    fun updateBlockEntities() {
         blockEntityManager.clearBlockEntities()
 
+        // todo: change Static.engine.entities to entities (non block entities)
         for (entity in Static.engine.entities.iterator()) {
             if (entity.has(BlockComponent.mapper)) continue
 

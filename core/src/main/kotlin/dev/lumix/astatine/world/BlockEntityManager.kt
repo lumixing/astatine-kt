@@ -25,7 +25,6 @@ class BlockEntityManager(private val physicsWorld: World<Entity>, private val ch
     private val blockEntityPool = pool { Entity() }
     private val blockEntityPositions: Array<Pair<Int, Int>> = Array()
 
-    // todo: split to BlockEntityManager?
     fun updateBlockEntitiesNear(blockX: Int, blockY: Int) {
         for (relativeBlockY in blockY - BLOCK_ENTITY_RADIUS..blockY + BLOCK_ENTITY_RADIUS) {
             for (relativeBlockX in blockX - BLOCK_ENTITY_RADIUS..blockX + BLOCK_ENTITY_RADIUS) {

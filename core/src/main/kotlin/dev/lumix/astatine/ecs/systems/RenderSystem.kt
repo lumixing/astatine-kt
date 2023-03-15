@@ -11,6 +11,7 @@ import ktx.ashley.allOf
 import ktx.ashley.get
 import ktx.graphics.use
 
+// used for rendering sprites at given location (requires phd in theoretical quantum physics)
 class RenderSystem : SortedIteratingSystem(
     allOf(TransformComponent::class, SpriteComponent::class).get(),
     compareBy { entity: Entity -> entity[SpriteComponent.mapper]?.z }

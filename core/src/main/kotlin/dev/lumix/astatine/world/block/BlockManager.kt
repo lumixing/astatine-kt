@@ -8,6 +8,7 @@ class BlockManager {
     companion object {
         private val blocks = HashMap<BlockType, Block>()
 
+        // todo: make this uhh better? somehow.. use some design pattern or some shit idk
         init {
             blocks[BlockType.AIR]           = Block(BlockType.AIR           , null)
             blocks[BlockType.GRASS]         = Block(BlockType.GRASS         , Static.assets[TextureAtlasAssets.Game].findRegion("grass"))
