@@ -11,7 +11,7 @@ import dev.lumix.astatine.engine.get
 import dev.lumix.astatine.world.block.BlockManager
 import dev.lumix.astatine.world.block.BlockType
 
-class Item(private val unprojX: Float, private val unprojY: Float, private val block: BlockType) : Entity() {
+class Item(private val unprojX: Float, private val unprojY: Float, val block: BlockType) : Entity() {
     companion object {
         const val BOUNDS_X = 4f
         const val BOUNDS_Y = 4f

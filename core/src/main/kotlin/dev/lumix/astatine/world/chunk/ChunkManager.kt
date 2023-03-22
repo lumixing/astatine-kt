@@ -70,7 +70,7 @@ class ChunkManager {
         return chunkX in 0 until CHUNKS_X && chunkY in 0 until CHUNKS_Y
     }
 
-    // todo: add Utils::absoluteToRelativeBlockPosition()
+    // todo: add Utils.absoluteToRelativeBlockPosition()
     fun getBlockType(blockX: Int, blockY: Int): BlockType? {
         val chunkX = blockX / Chunk.CHUNK_SIZE
         val chunkY = blockY / Chunk.CHUNK_SIZE

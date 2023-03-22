@@ -42,4 +42,11 @@ class Inventory {
             it.amount = 0
         }
     }
+
+    fun removeItem(slot: Int, amount: Int): Boolean {
+        if (!(slot in 0..5)) return false
+
+        array[slot].amount -= amount
+        return true
+    }
 }

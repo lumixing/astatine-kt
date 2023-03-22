@@ -21,6 +21,7 @@ class Box(private val unprojX: Float, private val unprojY: Float) : Entity() {
             sprite = Sprite(Static.assets[TextureAssets.Yippert])
         })
         add(PhysicsComponent().apply { bounds.set(BOUNDS_X, BOUNDS_Y) })
+        add(ExplosiveComponent())
 
         Static.engine.addEntity(this)
     }

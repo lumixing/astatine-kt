@@ -2,16 +2,18 @@ package dev.lumix.astatine.ecs.systems
 
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.systems.IteratingSystem
-import com.dongbat.jbump.World
 import dev.lumix.astatine.ecs.components.*
+import dev.lumix.astatine.ecs.entities.Box
 import dev.lumix.astatine.ecs.entities.Item
+import dev.lumix.astatine.ecs.entities.inventory.InventoryItem
 import dev.lumix.astatine.engine.*
+import dev.lumix.astatine.world.World
 import ktx.ashley.allOf
 import ktx.ashley.get
 import ktx.ashley.has
 
 // used for updating velocities and collision checking
-class PhysicsSystem(val world: World<Entity>) : IteratingSystem(
+class PhysicsSystem(val world: World) : IteratingSystem(
     allOf(TransformComponent::class, PhysicsComponent::class, ItemComponent::class).get()
 ) {
     companion object {
@@ -25,7 +27,7 @@ class PhysicsSystem(val world: World<Entity>) : IteratingSystem(
         val transform = entity[TransformComponent.mapper] ?: return Utils.expectComponent("entity", "transform")
         val physics = entity[PhysicsComponent.mapper] ?: return Utils.expectComponent("entity", "physics")
         val item = entity[ItemComponent.mapper] ?: return Utils.expectComponent("entity", "item")
-        if (world.getRect(item.item) == null) {
+        if (world.physicsWorld.getRect(item.item) == null) {
             return
         }
         val player = entity[PlayerComponent.mapper]
@@ -42,7 +44,7 @@ class PhysicsSystem(val world: World<Entity>) : IteratingSystem(
         transform.position.add(physics.velocity.x * delta, physics.velocity.y * delta)
 
         // collision check
-        val result = world.move(item.item, transform.position.x, transform.position.y, playerCollisionFilter)
+        val result = world.physicsWorld.move(item.item, transform.position.x, transform.position.y, playerCollisionFilter)
         for (i in 0 until result.projectedCollisions.size()) {
             val collision = result.projectedCollisions.get(i)
 
@@ -67,6 +69,15 @@ class PhysicsSystem(val world: World<Entity>) : IteratingSystem(
                                 it.isJumping = false
                             }
                         }
+
+                        if (collision.item.userData is Box) {
+                            if (world.physicsWorld.getRect(item.item) == null) {
+                                return
+                            }
+                            world.explode((transform.position.x / 8f).toInt(), (transform.position.y / 8f).toInt())
+                            world.physicsWorld.remove(item.item)
+                            Static.engine.removeEntity(entity)
+                        }
                     }
                 }
             }
@@ -75,16 +86,19 @@ class PhysicsSystem(val world: World<Entity>) : IteratingSystem(
             if (collision.other.userData is Item) {
                 val itemEntity = (collision.other.userData as Entity)
                 val itemItem = itemEntity[ItemComponent.mapper] ?: return Utils.expectComponent("item", "item")
-                world.remove(itemItem.item)
-                Static.engine.removeEntity(itemEntity)
+
                 player?.let {
+                    entity[InventoryComponent.mapper]!!.inventory.addItem(InventoryItem((collision.other.userData as Item).block, 1))
                     Static.assets[SoundAssets.Pop].play(0.1f)
                 }
+
+                world.physicsWorld.remove(itemItem.item)
+                Static.engine.removeEntity(itemEntity)
             }
         }
 
         // update pos based on collisions
-        val rect = world.getRect(item.item)
+        val rect = world.physicsWorld.getRect(item.item)
         rect?.let {
             transform.position.set(rect.x, rect.y)
         }

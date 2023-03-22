@@ -16,6 +16,7 @@ import dev.lumix.astatine.ecs.systems.RenderSystem
 import dev.lumix.astatine.engine.*
 import dev.lumix.astatine.world.World
 import dev.lumix.astatine.world.chunk.ChunkManager
+import ktx.app.KtxInputAdapter
 import ktx.app.KtxScreen
 import ktx.app.clearScreen
 import ktx.ashley.get
@@ -23,7 +24,7 @@ import ktx.ashley.has
 import ktx.graphics.use
 import ktx.log.debug
 
-class MainScreen : KtxScreen {
+class MainScreen : KtxScreen, KtxInputAdapter {
     private val world = World()
     private var selectionTexture = Static.assets[TextureAtlasAssets.Game].findRegion("selection")
 
@@ -37,10 +38,11 @@ class MainScreen : KtxScreen {
         Static.camera.zoom = 0.5f
         Static.engine.apply {
             addSystem(RenderSystem())
-            addSystem(PhysicsSystem(world.physicsWorld))
+            addSystem(PhysicsSystem(world))
             addSystem(PlayerSystem(world))
         }
         debug { "added ${Static.engine.systems.size()} systems" }
+        Gdx.input.inputProcessor = this
     }
 
     override fun render(delta: Float) {
@@ -68,6 +70,18 @@ class MainScreen : KtxScreen {
         renderDebugShapes()
 
         Static.engine.update(delta)
+    }
+
+    override fun scrolled(amountX: Float, amountY: Float): Boolean {
+        if (amountY < 0) {
+            Static.slot++
+            if (Static.slot > 4) Static.slot = 4
+        } else if (amountY > 0) {
+            Static.slot--
+            if (Static.slot < 0) Static.slot = 0
+        }
+
+        return true
     }
 
     private fun handleInput(delta: Float) {
@@ -136,7 +150,8 @@ class MainScreen : KtxScreen {
         val playerPhysics = world.player[PhysicsComponent.mapper] ?: return Utils.expectComponent("player", "physics")
         val playerInventory = world.player[InventoryComponent.mapper] ?: return Utils.expectComponent("player", "inventory")
         val inventory = playerInventory.inventory
-        val current = playerInventory.current
+//        val current = playerInventory.current
+        val current = Static.slot
 
         debugLeft.clear()
         debugLeft.add("mouse: {${unprojMousePos.x.toInt()} ${unprojMousePos.y.toInt()}} (${blockMousePos.x.toInt()} ${blockMousePos.y.toInt()}) [${chunkMousePos.x.toInt()} ${chunkMousePos.y.toInt()}]")

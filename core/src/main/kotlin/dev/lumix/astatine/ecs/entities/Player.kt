@@ -8,8 +8,8 @@ import dev.lumix.astatine.engine.Static
 
 class Player(private val unprojX: Float, private val unprojY: Float) : Entity() {
     companion object {
-        const val BOUNDS_X = 8f
-        const val BOUNDS_Y = 8f
+        const val BOUNDS_X = 7f
+        const val BOUNDS_Y = 7f
     }
 
     init {

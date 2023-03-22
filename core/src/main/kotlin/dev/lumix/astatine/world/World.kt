@@ -2,14 +2,17 @@ package dev.lumix.astatine.world
 
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector3
 import com.dongbat.jbump.World
 import dev.lumix.astatine.ecs.components.BlockComponent
 import dev.lumix.astatine.ecs.components.TransformComponent
+import dev.lumix.astatine.ecs.entities.Item
 import dev.lumix.astatine.ecs.entities.Player
 import dev.lumix.astatine.engine.Static
 import dev.lumix.astatine.engine.Utils
 import dev.lumix.astatine.world.block.Block
+import dev.lumix.astatine.world.block.BlockType
 import dev.lumix.astatine.world.chunk.Chunk
 import dev.lumix.astatine.world.chunk.ChunkManager
 import ktx.ashley.get
@@ -64,5 +67,28 @@ class World {
 
     fun render() {
         chunkManager.renderLoadedChunks()
+    }
+
+    fun breakBlock(blockX: Int, blockY: Int): Boolean {
+        val blockType = chunkManager.getBlockType(blockX, blockY)
+        if (blockType == BlockType.AIR || blockType == null) return false
+
+        chunkManager.setBlockType(blockX, blockY, BlockType.AIR)
+
+        val itemPositionX = blockX * 8f - 4 + MathUtils.random(-4, 4)
+        val itemPositionY = blockY * 8f + MathUtils.random(-4, 4)
+        val itemEntity = Item(itemPositionX, itemPositionY, blockType)
+        itemEntity.addItemToEntity(physicsWorld)
+
+        return true
+    }
+
+    fun explode(blockX: Int, blockY: Int) {
+        val radius = 5
+        for (x in blockX-radius..blockX+radius) {
+            for (y in blockY-radius..blockY+radius) {
+                breakBlock(x, y)
+            }
+        }
     }
 }

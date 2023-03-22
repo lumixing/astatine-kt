@@ -32,6 +32,7 @@ class PlayerSystem(val world: World) : IteratingSystem(
         val physics = entity[PhysicsComponent.mapper] ?: return Utils.expectComponent("player", "physics")
         val item = entity[ItemComponent.mapper] ?: return Utils.expectComponent("player", "item")
         val player = entity[PlayerComponent.mapper] ?: return Utils.expectComponent("player", "player")
+        val inventory = entity[InventoryComponent.mapper] ?: return Utils.expectComponent("player", "inventory")
 
         val playerCollisionFilter = PlayerCollisionFilter()
         val collisions = Collisions()
@@ -69,10 +70,23 @@ class PlayerSystem(val world: World) : IteratingSystem(
         }
 
         // mouse input
-        // todo: make this better pls thx
         if (Gdx.input.isTouched) {
             val blockPos = Static.camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f)).scl(1/8f)
+            val blockType = world.chunkManager.getBlockType(blockPos.x.toInt(), blockPos.y.toInt())
+            if (blockType == null) return
 
+            if (Gdx.input.isButtonPressed(0)) {
+               world.breakBlock(blockPos.x.toInt(), blockPos.y.toInt())
+            } else if (Gdx.input.isButtonPressed(1)) {
+                if (blockType != BlockType.AIR) return
+                if (inventory.inventory.array[Static.slot].amount == 0) return
+                if (inventory.inventory.array[Static.slot].item == null) return
+
+                inventory.inventory.removeItem(Static.slot, 1)
+                world.chunkManager.setBlockType(blockPos.x.toInt(), blockPos.y.toInt(), inventory.inventory.array[Static.slot].item!!)
+            }
+
+            /*
             for (newBlockPosX in blockPos.x.toInt()-Static.digRadius..blockPos.x.toInt()+Static.digRadius) {
                 for (newBlockPosY in blockPos.y.toInt()-Static.digRadius..blockPos.y.toInt()+Static.digRadius) {
                     val blockType = world.chunkManager.getBlockType(newBlockPosX, newBlockPosY)
@@ -89,7 +103,7 @@ class PlayerSystem(val world: World) : IteratingSystem(
                     itemEntity.addItemToEntity(world.physicsWorld)
                 }
             }
-
+            */
         }
     }
 }
