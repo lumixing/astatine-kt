@@ -78,7 +78,7 @@ class ChunkManager {
 
         val relativeBlockX = blockX % Chunk.CHUNK_SIZE
         val relativeBlockY = blockY % Chunk.CHUNK_SIZE
-        return chunk.getBlockType(relativeBlockX, relativeBlockY);
+        return chunk.getBlockType(relativeBlockX, relativeBlockY)
     }
 
     fun setBlockType(blockX: Int, blockY: Int, blockType: BlockType): Boolean {
@@ -88,6 +88,26 @@ class ChunkManager {
 
         val relativeBlockX = blockX % Chunk.CHUNK_SIZE
         val relativeBlockY = blockY % Chunk.CHUNK_SIZE
-        return chunk.setBlockType(relativeBlockX, relativeBlockY, blockType);
+        return chunk.setBlockType(relativeBlockX, relativeBlockY, blockType)
+    }
+
+    fun getWallBlockType(blockX: Int, blockY: Int): BlockType? {
+        val chunkX = blockX / Chunk.CHUNK_SIZE
+        val chunkY = blockY / Chunk.CHUNK_SIZE
+        val chunk = getChunk(chunkX, chunkY) ?: return null
+
+        val relativeBlockX = blockX % Chunk.CHUNK_SIZE
+        val relativeBlockY = blockY % Chunk.CHUNK_SIZE
+        return chunk.getWallBlockType(relativeBlockX, relativeBlockY)
+    }
+
+    fun setWallBlockType(blockX: Int, blockY: Int, blockType: BlockType): Boolean {
+        val chunkX = blockX / Chunk.CHUNK_SIZE
+        val chunkY = blockY / Chunk.CHUNK_SIZE
+        val chunk = getChunk(chunkX, chunkY) ?: return false
+
+        val relativeBlockX = blockX % Chunk.CHUNK_SIZE
+        val relativeBlockY = blockY % Chunk.CHUNK_SIZE
+        return chunk.setWallBlockType(relativeBlockX, relativeBlockY, blockType)
     }
 }

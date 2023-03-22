@@ -9,9 +9,12 @@ import dev.lumix.astatine.ecs.components.BlockComponent
 import dev.lumix.astatine.ecs.components.TransformComponent
 import dev.lumix.astatine.ecs.entities.Item
 import dev.lumix.astatine.ecs.entities.Player
+import dev.lumix.astatine.engine.SoundAssets
 import dev.lumix.astatine.engine.Static
 import dev.lumix.astatine.engine.Utils
+import dev.lumix.astatine.engine.get
 import dev.lumix.astatine.world.block.Block
+import dev.lumix.astatine.world.block.BlockManager
 import dev.lumix.astatine.world.block.BlockType
 import dev.lumix.astatine.world.chunk.Chunk
 import dev.lumix.astatine.world.chunk.ChunkManager
@@ -79,6 +82,8 @@ class World {
         val itemPositionY = blockY * 8f + MathUtils.random(-4, 4)
         val itemEntity = Item(itemPositionX, itemPositionY, blockType)
         itemEntity.addItemToEntity(physicsWorld)
+
+        BlockManager.getBlock(blockType)?.sound?.play(0.1f)
 
         return true
     }

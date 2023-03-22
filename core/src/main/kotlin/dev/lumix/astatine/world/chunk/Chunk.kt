@@ -9,10 +9,14 @@ class Chunk(val chunkX: Int, val chunkY: Int) {
     }
 
     private val blocks: Array<Array<BlockType?>> = Array(CHUNK_SIZE) { Array(CHUNK_SIZE) { null } }
+    private val walls: Array<Array<BlockType?>> = Array(CHUNK_SIZE) { Array(CHUNK_SIZE) { null } }
 
     fun render() {
         for (relativeBlockY in 0 until CHUNK_SIZE) {
             for (relativeBlockX in 0 until CHUNK_SIZE) {
+                renderWall(relativeBlockX, relativeBlockY)
+
+                // render blocks
                 // dont render if block is null or air
                 val blockType = getBlockType(relativeBlockX, relativeBlockY) ?: continue
                 if (blockType == BlockType.AIR) continue
@@ -25,6 +29,19 @@ class Chunk(val chunkX: Int, val chunkY: Int) {
         }
     }
 
+    private fun renderWall(relativeBlockX: Int, relativeBlockY: Int) {
+        val wallBlockType = getWallBlockType(relativeBlockX, relativeBlockY) ?: return
+        if (wallBlockType == BlockType.AIR) return
+
+        // if block in front dont render wall
+        val blockType = getBlockType(relativeBlockX, relativeBlockY)
+        if (blockType != null && blockType != BlockType.AIR) return
+
+        val blockX = relativeBlockX + CHUNK_SIZE * chunkX
+        val blockY = relativeBlockY + CHUNK_SIZE * chunkY
+        BlockManager.getBlock(wallBlockType)?.renderWall(blockX, blockY)
+    }
+
     // returns null if invalid block position
     fun getBlockType(relativeBlockX: Int, relativeBlockY: Int): BlockType? {
         if (!isValidBlockPosition(relativeBlockX, relativeBlockY)) return null
@@ -35,6 +52,19 @@ class Chunk(val chunkX: Int, val chunkY: Int) {
     fun setBlockType(relativeBlockX: Int, relativeBlockY: Int, blockType: BlockType): Boolean {
         if (!isValidBlockPosition(relativeBlockX, relativeBlockY)) return false
         blocks[relativeBlockX][relativeBlockY] = blockType
+        return true
+    }
+
+    // returns null if invalid block position
+    fun getWallBlockType(relativeBlockX: Int, relativeBlockY: Int): BlockType? {
+        if (!isValidBlockPosition(relativeBlockX, relativeBlockY)) return null
+        return walls[relativeBlockX][relativeBlockY]
+    }
+
+    // returns true if succesfully sets a block
+    fun setWallBlockType(relativeBlockX: Int, relativeBlockY: Int, blockType: BlockType): Boolean {
+        if (!isValidBlockPosition(relativeBlockX, relativeBlockY)) return false
+        walls[relativeBlockX][relativeBlockY] = blockType
         return true
     }
 

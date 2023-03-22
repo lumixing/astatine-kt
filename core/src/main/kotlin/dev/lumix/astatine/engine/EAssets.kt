@@ -21,7 +21,8 @@ fun AssetManager.load(asset: SoundAssets) = load<Sound>(asset.path)
 operator fun AssetManager.get(asset: SoundAssets) = getAsset<Sound>(asset.path)
 
 enum class TextureAtlasAssets(val path: String) {
-    Game("textures/pack.atlas")
+    Game("textures/pack.atlas"),
+    Walls("textures/walls.atlas")
 }
 
 fun AssetManager.load(asset: TextureAtlasAssets) = load<TextureAtlas>(asset.path)

@@ -45,6 +45,7 @@ class WorldGen(private val chunkManager: ChunkManager, private val seed: Long = 
         for (blockY in 0 until MAX_BLOCK_Y) {
             for (blockX in 0 until MAX_BLOCK_X) {
                 chunkManager.setBlockType(blockX, blockY, BlockType.DIRT)
+                chunkManager.setWallBlockType(blockX, blockY, BlockType.DIRT)
             }
         }
     }
@@ -54,8 +55,10 @@ class WorldGen(private val chunkManager: ChunkManager, private val seed: Long = 
             val value = (surfaceNoise.generate(blockX / SURFACE_LENGTH, 0f) * SURFACE_HEIGHT).toInt() + SURFACE_OFFSET
 
             chunkManager.setBlockType(blockX, value, BlockType.GRASS)
+            chunkManager.setWallBlockType(blockX, value, BlockType.GRASS)
             for (blockY in value + 1 until MAX_BLOCK_Y) {
                 chunkManager.setBlockType(blockX, blockY, BlockType.AIR)
+                chunkManager.setWallBlockType(blockX, blockY, BlockType.AIR)
             }
         }
     }
@@ -67,11 +70,13 @@ class WorldGen(private val chunkManager: ChunkManager, private val seed: Long = 
             for (blockY in value downTo 0) {
                 if (blockY < value - STONE_THRESHOLD) {
                     chunkManager.setBlockType(blockX, blockY, BlockType.STONE)
+                    chunkManager.setWallBlockType(blockX, blockY, BlockType.STONE)
                     continue
                 }
 
                 val blockType = if (MathUtils.randomBoolean()) BlockType.STONE else BlockType.DIRT
                 chunkManager.setBlockType(blockX, blockY, blockType)
+                chunkManager.setWallBlockType(blockX, blockY, blockType)
             }
         }
     }
