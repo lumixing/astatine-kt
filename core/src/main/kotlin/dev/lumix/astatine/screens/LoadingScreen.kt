@@ -35,8 +35,5 @@ class LoadingScreen(private val game: Astatine) : KtxScreen {
             borderColor = Color.BLACK
             borderWidth = 1.3f
         }
-
-        VisUI.load()
-        Scene2DSkin.defaultSkin = VisUI.getSkin()
     }
 }
