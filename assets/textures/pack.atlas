@@ -34,6 +34,13 @@ lumix
   index: -1
 ore
   rotate: false
+  xy: 24, 8
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+pickaxe
+  rotate: false
   xy: 16, 0
   size: 8, 8
   orig: 8, 8
@@ -41,7 +48,7 @@ ore
   index: -1
 selection
   rotate: false
-  xy: 24, 8
+  xy: 24, 0
   size: 8, 8
   orig: 8, 8
   offset: 0, 0

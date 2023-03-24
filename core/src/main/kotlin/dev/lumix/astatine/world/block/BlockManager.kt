@@ -14,12 +14,12 @@ class BlockManager {
             val bAtlas = Static.assets[TextureAtlasAssets.Game]
             val wAtlas = Static.assets[TextureAtlasAssets.Walls]
 
-            blocks[BlockType.AIR]       = Block(BlockType.AIR      , null                          , null,                           null)
-            blocks[BlockType.GRASS]     = Block(BlockType.GRASS    , bAtlas.findRegion("grass")    , wAtlas.findRegion("grass"),     Static.assets[SoundAssets.Break])
-            blocks[BlockType.DIRT]      = Block(BlockType.DIRT     , bAtlas.findRegion("dirt")     , wAtlas.findRegion("dirt"),      Static.assets[SoundAssets.Break])
-            blocks[BlockType.STONE]     = Block(BlockType.STONE    , bAtlas.findRegion("stone")    , wAtlas.findRegion("stone"),     Static.assets[SoundAssets.Stone])
-            blocks[BlockType.ORE]       = Block(BlockType.ORE      , bAtlas.findRegion("ore")      , wAtlas.findRegion("ore"),       Static.assets[SoundAssets.Stone])
-            blocks[BlockType.DEEPSLATE] = Block(BlockType.DEEPSLATE, bAtlas.findRegion("deepslate"), wAtlas.findRegion("deepslate"), Static.assets[SoundAssets.Stone])
+            blocks[BlockType.AIR]       = Block(BlockType.AIR      , null                          , null,                           null, false)
+            blocks[BlockType.GRASS]     = Block(BlockType.GRASS    , bAtlas.findRegion("grass")    , wAtlas.findRegion("grass"),     Static.assets[SoundAssets.Break], false)
+            blocks[BlockType.DIRT]      = Block(BlockType.DIRT     , bAtlas.findRegion("dirt")     , wAtlas.findRegion("dirt"),      Static.assets[SoundAssets.Break], true)
+            blocks[BlockType.STONE]     = Block(BlockType.STONE    , bAtlas.findRegion("stone")    , wAtlas.findRegion("stone"),     Static.assets[SoundAssets.Stone], true)
+            blocks[BlockType.ORE]       = Block(BlockType.ORE      , bAtlas.findRegion("ore")      , wAtlas.findRegion("ore"),       Static.assets[SoundAssets.Stone], true)
+            blocks[BlockType.DEEPSLATE] = Block(BlockType.DEEPSLATE, bAtlas.findRegion("deepslate"), wAtlas.findRegion("deepslate"), Static.assets[SoundAssets.Stone], true)
         }
 
         fun getBlock(type: BlockType): Block? {

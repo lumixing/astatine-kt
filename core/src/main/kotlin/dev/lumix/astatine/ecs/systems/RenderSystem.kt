@@ -10,6 +10,7 @@ import dev.lumix.astatine.engine.Utils
 import ktx.ashley.allOf
 import ktx.ashley.get
 import ktx.graphics.use
+import ktx.log.debug
 
 // used for rendering sprites at given location (requires phd in theoretical quantum physics)
 class RenderSystem : SortedIteratingSystem(
@@ -29,6 +30,7 @@ class RenderSystem : SortedIteratingSystem(
             sprite.sprite.setPosition(transform.position.x + sprite.offset.x, transform.position.y + sprite.offset.y)
             sprite.sprite.setScale(transform.scale.x, transform.scale.y)
             sprite.sprite.rotation = transform.rotation * MathUtils.radiansToDegrees
+            sprite.sprite.setFlip(sprite.flipX, false)
             sprite.sprite.draw(batch)
         }
     }

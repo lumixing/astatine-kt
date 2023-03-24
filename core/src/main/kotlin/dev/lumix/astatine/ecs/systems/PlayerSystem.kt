@@ -33,6 +33,7 @@ class PlayerSystem(val world: World) : IteratingSystem(
         val item = entity[ItemComponent.mapper] ?: return Utils.expectComponent("player", "item")
         val player = entity[PlayerComponent.mapper] ?: return Utils.expectComponent("player", "player")
         val inventory = entity[InventoryComponent.mapper] ?: return Utils.expectComponent("player", "inventory")
+        val sprite = entity[SpriteComponent.mapper] ?: return Utils.expectComponent("player", "sprite")
 
         val playerCollisionFilter = PlayerCollisionFilter()
         val collisions = Collisions()
@@ -67,6 +68,12 @@ class PlayerSystem(val world: World) : IteratingSystem(
             physics.velocity.x = Utils.approach(physics.velocity.x, WALK_SPEED, WALK_ACCELERATION * delta)
         } else {
             physics.velocity.x = Utils.approach(physics.velocity.x, 0f, WALK_ACCELERATION * delta)
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+            sprite.flipX = false
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.D)) {
+            sprite.flipX = true
         }
 
         // mouse input

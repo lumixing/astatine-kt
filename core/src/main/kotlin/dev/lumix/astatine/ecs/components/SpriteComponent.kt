@@ -16,5 +16,6 @@ class SpriteComponent : Component {
 
     var sprite = Sprite(Static.assets[TextureAtlasAssets.Game].findRegion("lumix"))
     val offset: Vector2 = Vector2(0f, 0f)
+    var flipX = true
     var z = 0
 }

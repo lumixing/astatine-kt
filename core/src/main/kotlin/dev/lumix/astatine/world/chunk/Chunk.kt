@@ -1,5 +1,6 @@
 package dev.lumix.astatine.world.chunk
 
+import com.badlogic.gdx.math.MathUtils
 import dev.lumix.astatine.world.block.BlockManager
 import dev.lumix.astatine.world.block.BlockType
 
@@ -10,6 +11,16 @@ class Chunk(val chunkX: Int, val chunkY: Int) {
 
     private val blocks: Array<Array<BlockType?>> = Array(CHUNK_SIZE) { Array(CHUNK_SIZE) { null } }
     private val walls: Array<Array<BlockType?>> = Array(CHUNK_SIZE) { Array(CHUNK_SIZE) { null } }
+    private val flips: Array<Array<Pair<Boolean, Boolean>>> = Array(CHUNK_SIZE) { Array(CHUNK_SIZE) { Pair(true, true) } }
+
+    init {
+        // init flips
+        for (i in 0 until CHUNK_SIZE) {
+            for (j in 0 until CHUNK_SIZE) {
+                flips[i][j] = Pair(MathUtils.randomBoolean(), MathUtils.randomBoolean())
+            }
+        }
+    }
 
     fun render() {
         for (relativeBlockY in 0 until CHUNK_SIZE) {
@@ -24,7 +35,9 @@ class Chunk(val chunkX: Int, val chunkY: Int) {
                 // chunk relative to absolute block position
                 val blockX = relativeBlockX + CHUNK_SIZE * chunkX
                 val blockY = relativeBlockY + CHUNK_SIZE * chunkY
-                BlockManager.getBlock(blockType)?.render(blockX, blockY)
+                val (flipX, flipY) = flips[relativeBlockX][relativeBlockY]
+
+                BlockManager.getBlock(blockType)?.render(blockX, blockY, flipX, flipY)
             }
         }
     }
@@ -39,7 +52,9 @@ class Chunk(val chunkX: Int, val chunkY: Int) {
 
         val blockX = relativeBlockX + CHUNK_SIZE * chunkX
         val blockY = relativeBlockY + CHUNK_SIZE * chunkY
-        BlockManager.getBlock(wallBlockType)?.renderWall(blockX, blockY)
+        val (flipX, flipY) = flips[relativeBlockX][relativeBlockY]
+
+        BlockManager.getBlock(wallBlockType)?.renderWall(blockX, blockY, flipX, flipY)
     }
 
     // returns null if invalid block position

@@ -1,13 +1,11 @@
 package dev.lumix.astatine.screens
 
 import com.badlogic.gdx.graphics.Color
-import com.kotcrab.vis.ui.VisUI
 import dev.lumix.astatine.Astatine
 import dev.lumix.astatine.engine.*
 import ktx.app.KtxScreen
 import ktx.freetype.loadFreeTypeFont
 import ktx.freetype.registerFreeTypeFontLoaders
-import ktx.scene2d.Scene2DSkin
 
 class LoadingScreen(private val game: Astatine) : KtxScreen {
     override fun render(delta: Float) {
@@ -16,8 +14,8 @@ class LoadingScreen(private val game: Astatine) : KtxScreen {
 
         if (Static.assets.isFinished) {
             Static.font = Static.assets.get("fonts/jetbrains.ttf")
-            game.addScreen(MainScreen())
-            game.setScreen<MainScreen>()
+            game.addScreen(GameScreen())
+            game.setScreen<GameScreen>()
             game.removeScreen<LoadingScreen>()
             dispose()
         }
