@@ -1,4 +1,5 @@
 # astatine
+## ⚠ rewriting in rust with bevy https://github.com/lumixing/astatine
 <p align="center">
   <img src="https://img.shields.io/badge/version-undefined-critical?style=for-the-badge"/>
   <img src="https://img.shields.io/badge/made%20with-kotlin-blue?style=for-the-badge"/>
